@@ -1,0 +1,164 @@
+import React, { useState } from "react";
+import Button from "../common/Button";
+import Input from "../common/Input";
+import Select from "../common/Select";
+import Textarea from "../common/Textarea";
+import { FiRotateCcw } from "react-icons/fi";
+import { FaWandMagicSparkles } from "react-icons/fa6";
+import Breadcrumb from "../common/Breadcrumb";
+import { useQuestionSet } from "../../context/QuestionSetContext";
+
+function QuestionSetForm() {
+  const { generateQuestions, loading } = useQuestionSet();
+
+  const [form, setForm] = useState({
+    topic: "",
+    difficulty: "medium",
+    questions: 15,
+    instructions: "",
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleReset = () => {
+    setForm({
+      topic: "",
+      difficulty: "medium",
+      questions: 15,
+      instructions: "",
+    });
+    setErrors({});
+  };
+
+  // 🔹 Validation
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.topic.trim()) {
+      newErrors.topic = "Topic is required";
+    }
+
+    if (!form.questions || form.questions < 5 || form.questions > 50) {
+      newErrors.questions = "Must be between 5 and 50";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      await generateQuestions(form);
+      console.log("Questions generated");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <>
+      <Breadcrumb
+        items={[
+          { label: "Question Sets", path: "/question-sets" },
+          { label: "Create Questions" },
+        ]}
+      />
+
+      <div className="max-w-2xl mx-auto mt-6">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-md p-6 space-y-5"
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Generation settings
+              </h2>
+              <p className="text-sm text-gray-500">
+                Describe what you want and we will generate it for you.
+              </p>
+            </div>
+
+            <span className="text-xs text-nowrap font-medium px-3 py-1 rounded-full bg-purple-100 text-purple-600">
+              AI powered
+            </span>
+          </div>
+
+          {/* Topic */}
+          <Input
+            label="Topic name"
+            name="topic"
+            value={form.topic}
+            onChange={handleChange}
+            placeholder="e.g. Photosynthesis in plants"
+            error={errors.topic}
+          />
+
+          {/* Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Difficulty"
+              name="difficulty"
+              value={form.difficulty}
+              onChange={handleChange}
+              options={[
+                { label: "Easy", value: "easy" },
+                { label: "Medium", value: "medium" },
+                { label: "Hard", value: "hard" },
+              ]}
+            />
+
+            <Input
+              label="Number of questions"
+              type="number"
+              name="questions"
+              value={form.questions}
+              onChange={handleChange}
+              error={errors.questions}
+              min={5}
+              max={50}
+            />
+          </div>
+
+          {/* Instructions */}
+          <Textarea
+            label="Additional instructions (optional)"
+            name="instructions"
+            rows={4}
+            value={form.instructions}
+            onChange={handleChange}
+          />
+
+          {/* Footer */}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              icon={<FiRotateCcw />}
+              onClick={handleReset}
+            >
+              Reset
+            </Button>
+
+            <Button icon={<FaWandMagicSparkles />} loading={loading}>
+  Generate
+</Button>
+
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
+export default QuestionSetForm;
