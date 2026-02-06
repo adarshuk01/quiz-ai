@@ -65,6 +65,32 @@ Format:
 };
 
 
+exports.deleteQuestionSet = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const questionSet = await QuestionSet.findById(id);
+
+    if (!questionSet) {
+      return res.status(404).json({ message: "Question set not found" });
+    }
+
+    // Optional: ensure only creator can delete
+    if (questionSet.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    await QuestionSet.findByIdAndDelete(id);
+
+    res.json({ message: "Question set deleted successfully" });
+  } catch (err) {
+    console.error("DELETE QUESTION SET ERROR:", err);
+    res.status(500).json({ message: "Failed to delete question set" });
+  }
+};
+
+
+
 // PUT /api/question-sets/:id
 exports.updateQuestionSet = async (req, res) => {
   try {

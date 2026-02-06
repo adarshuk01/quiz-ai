@@ -6,12 +6,23 @@ import Button from "../components/common/Button";
 import { useNavigate } from "react-router-dom";
 import DataTable from "../components/common/DataTable";
 import { useQuestionSets } from "../context/QuestionSetContext";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 
 function QuestionSets() {
   const navigate = useNavigate();
-  const { questionSets, getMyQuestionSets, loading } = useQuestionSets();
+  const {
+    questionSets,
+    getMyQuestionSets,
+    loading,
+    deleteQuestionSet,
+  } = useQuestionSets();
 
   const [search, setSearch] = useState("");
+
+  // confirm dialog state
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     getMyQuestionSets();
@@ -20,6 +31,25 @@ function QuestionSets() {
   const filtered = questionSets.filter((q) =>
     q.topic?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const openDeleteDialog = (id) => {
+    setSelectedId(id);
+    setIsConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      await deleteQuestionSet(selectedId);
+      await getMyQuestionSets(); // refresh list
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+      setIsConfirmOpen(false);
+      setSelectedId(null);
+    }
+  };
 
   const columns = [
     {
@@ -61,7 +91,10 @@ function QuestionSets() {
           <button>
             <FiPlay />
           </button>
-          <button className="text-red-500">
+          <button
+            className="text-red-500"
+            onClick={() => openDeleteDialog(row._id)}
+          >
             <FiTrash2 />
           </button>
         </div>
@@ -76,17 +109,13 @@ function QuestionSets() {
         actions={
           <>
             <Button
-              onClick={() =>
-                navigate("/question-sets/create-topic")
-              }
+              onClick={() => navigate("/question-sets/create-topic")}
               icon={<FaWandMagicSparkles />}
             >
               Generate from Topic
             </Button>
             <Button
-              onClick={() =>
-                navigate("/question-sets/create-pdf")
-              }
+              onClick={() => navigate("/question-sets/create-pdf")}
               variant="secondary"
               icon={<FiFile />}
             >
@@ -110,6 +139,16 @@ function QuestionSets() {
           Loading question sets...
         </p>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        title="Delete Question Set?"
+        message="This will permanently remove the question set."
+        confirmText={deleting ? "Deleting..." : "Delete"}
+        onCancel={() => setIsConfirmOpen(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

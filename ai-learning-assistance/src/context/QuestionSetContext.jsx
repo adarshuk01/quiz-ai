@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
+import axios from "axios";
 
 const QuestionSetContext = createContext();
 
@@ -21,6 +22,29 @@ export const QuestionSetProvider = ({ children }) => {
     try {
       const res = await axiosInstance.post(
         "/questionsets/generate",
+        formData
+      );
+
+      setGeneratedQuestions(res.data.questions || []);
+      return res.data;
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to generate questions"
+      );
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   // 🔹 Generate questions
+  const generateQuestionsFromPdf = async (formData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await axiosInstance.post(
+        "/questionsets/upload",
         formData
       );
 
@@ -80,6 +104,24 @@ export const QuestionSetProvider = ({ children }) => {
     }
   };
 
+  const deleteQuestionSet = async (id) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await axiosInstance.delete(`/questionsets/${id}`);
+      setQuestionSets((prev) =>
+  prev.filter((q) => q._id !== id)
+);
+
+    } catch (err) {
+      console.error("Delete error:", err);
+      setError(err.response?.data?.message || "Failed to delete");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <QuestionSetContext.Provider
       value={{
@@ -88,9 +130,11 @@ export const QuestionSetProvider = ({ children }) => {
         generatedQuestions,
         questionSets,
         currentQuestionSet,
+        generateQuestionsFromPdf,
         generateQuestions,
         getMyQuestionSets,
         getQuestionSetById,
+        deleteQuestionSet
 
       }}
     >
