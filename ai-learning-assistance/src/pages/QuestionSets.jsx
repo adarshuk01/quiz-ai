@@ -148,6 +148,7 @@ function QuestionSets() {
         confirmText={deleting ? "Deleting..." : "Delete"}
         onCancel={() => setIsConfirmOpen(false)}
         onConfirm={handleDelete}
+        loading={loading}
       />
     </div>
   );

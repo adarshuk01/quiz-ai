@@ -6,22 +6,29 @@ import QuestionSets from './pages/QuestionSets'
 import QuestionSetForm from './components/QuestionSets/QuestionSetForm'
 import UploadPdf from './components/QuestionSets/UploadPdf'
 import QuestionSetDetails from './pages/QuestionsList'
+import Quiz from './pages/Quiz'
+import QuizBasicInfo from './components/quiz/QuizForm'
 
 function App() {
   return (
     <>
-    <Routes>
-      <Route element={<Layout/>}>
-        <Route path='/' element={<Dashboard/>}/>
-        <Route path='/question-sets' element={<QuestionSets/>} />
-          <Route path='/question-sets/:id' element={<QuestionSetDetails/>} />
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path='/' element={<Dashboard />} />
+          <Route path='/question-sets' element={<QuestionSets />} />
+          <Route path='/question-sets/:id' element={<QuestionSetDetails />} />
 
-        <Route path='/question-sets/create-topic' element={<QuestionSetForm/>} />
-         <Route path='/question-sets/create-pdf' element={<UploadPdf/>}/>
-        <Route path='*' element={<>not found</>}/>
-      </Route>
-    </Routes>
-    
+          <Route path='/question-sets/create-topic' element={<QuestionSetForm />} />
+          <Route path='/question-sets/create-pdf' element={<UploadPdf />} />
+          <Route path='/quizzes' element={<Quiz />} />
+          <Route path='/quizzes/create' element={<QuizBasicInfo />} />
+          <Route path="/quizzes/edit/:id" element={<QuizBasicInfo />} />
+
+
+          <Route path='*' element={<>not found</>} />
+        </Route>
+      </Routes>
+
     </>
   )
 }

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const QuestionSetContext = createContext();
 
@@ -9,6 +10,7 @@ export const useQuestionSets = () => useContext(QuestionSetContext);
 export const QuestionSetProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate=useNavigate()
 
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [questionSets, setQuestionSets] = useState([]);
@@ -26,6 +28,7 @@ export const QuestionSetProvider = ({ children }) => {
       );
 
       setGeneratedQuestions(res.data.questions || []);
+      navigate('/question-sets')
       return res.data;
     } catch (err) {
       setError(

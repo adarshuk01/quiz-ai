@@ -1,5 +1,6 @@
 import React from "react";
 import { FiAlertTriangle } from "react-icons/fi";
+import Button from "./Button";
 
 function ConfirmDialog({
   isOpen,
@@ -9,6 +10,7 @@ function ConfirmDialog({
   cancelText = "Cancel",
   onConfirm,
   onCancel,
+  loading
 }) {
   if (!isOpen) return null;
 
@@ -34,19 +36,21 @@ function ConfirmDialog({
 
         {/* Actions */}
         <div className="flex gap-3 mt-6">
-          <button
+          <Button
+          variant="secondary"
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:opacity-90 transition"
+            className="flex-1"
           >
             {cancelText}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            loading={loading}
             onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition"
+            className="flex-1 "
           >
             {confirmText}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

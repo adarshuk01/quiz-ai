@@ -25,6 +25,91 @@ exports.createQuiz = async (req, res) => {
 };
 
 
+exports.getUserQuizzes = async (req, res) => {
+  try {
+    const quizzes = await Quiz.find({ createdBy: req.user._id })
+      .populate("questionSet", "topic") // optional: shows question set title
+      .sort({ createdAt: -1 }); // newest first
+
+    res.status(200).json({
+      count: quizzes.length,
+      quizzes,
+    });
+  } catch (error) {
+    console.error("GET USER QUIZZES ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getQuizById = async (req, res) => {
+  try {
+    const quiz = await Quiz.findOne({
+      _id: req.params.id,
+      createdBy: req.user._id,
+    }).populate("questionSet");
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    res.status(200).json(quiz);
+  } catch (error) {
+    console.error("GET QUIZ ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.updateQuiz = async (req, res) => {
+  try {
+    const { title, questionSetId, duration } = req.body;
+
+    const quiz = await Quiz.findOne({
+      _id: req.params.id,
+      createdBy: req.user._id,
+    });
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    if (title !== undefined) quiz.title = title;
+    if (questionSetId !== undefined) quiz.questionSet = questionSetId;
+    if (duration !== undefined) quiz.duration = duration;
+
+    await quiz.save();
+
+    res.status(200).json({
+      message: "Quiz updated successfully",
+      quiz,
+    });
+  } catch (error) {
+    console.error("UPDATE QUIZ ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+exports.deleteQuiz = async (req, res) => {
+  try {
+    const quiz = await Quiz.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: req.user._id,
+    });
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    res.json({ message: "Quiz deleted successfully" });
+  } catch (error) {
+    console.error("DELETE QUIZ ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
 exports.startQuiz = async (req, res) => {
   const { code } = req.params;
   const { studentName, rollNo } = req.body;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuestionSets } from "../context/QuestionSetContext";
 import EditableQuestionCard from "../components/QuestionSets/EditableQuestionCard";
@@ -19,13 +19,16 @@ function QuestionSetDetails() {
   const [saving, setSaving] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
+  // scroll container ref
+  const scrollContainerRef = useRef(null);
+
   useEffect(() => {
     getQuestionSetById(id);
   }, [id]);
 
   useEffect(() => {
     if (currentQuestionSet) {
-      setQuestions(currentQuestionSet.questions);
+      setQuestions(currentQuestionSet.questions || []);
     }
   }, [currentQuestionSet]);
 
@@ -40,18 +43,42 @@ function QuestionSetDetails() {
     setQuestions(newQuestions);
   };
 
+  // Add new question with auto-scroll
+  const handleAddQuestion = () => {
+    const newQuestion = {
+      question: "",
+      options: ["", "", "", ""],
+      correctAnswer: 0,
+    };
+
+    setQuestions((prev) => {
+      const updated = [...prev, newQuestion];
+
+      // wait for DOM render, then scroll
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({
+            top: scrollContainerRef.current.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
+
+      return updated;
+    });
+  };
+
   // actual save logic
   const confirmSave = async () => {
     try {
       setSaving(true);
-      setShowSaveConfirm(false);
 
       await axiosInstance.put(`/questionsets/${id}`, {
         questions,
       });
 
-      alert("Question set updated successfully");
-      getQuestionSetById(id);
+      await getQuestionSetById(id);
+      setShowSaveConfirm(false);
     } catch (err) {
       console.error("SAVE ERROR:", err);
       alert("Failed to save changes");
@@ -64,11 +91,12 @@ function QuestionSetDetails() {
   if (!currentQuestionSet) return <p className="p-6">No data</p>;
 
   return (
-    <div className="mx-auto space-y-5">
-      {/* Header */}
+  <div className="mx-auto lg:h-[calc(95vh-80px)] h-[90vh] flex flex-col">
+    {/* Sticky Header */}
+    <div className="sticky top-0 z-10 bg-white shadow-sm p-4 rounded-lg">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-semibold capitalize text-gray-800">
+          <h2 className="lg:text-2xl text-lg font-semibold capitalize text-gray-800">
             {currentQuestionSet.topic}
           </h2>
           <p className="text-sm text-gray-500">
@@ -81,9 +109,8 @@ function QuestionSetDetails() {
             variant="secondary"
             icon={<FaSave />}
             onClick={() => setShowSaveConfirm(true)}
-            disabled={saving}
           >
-            {saving ? "Saving..." : "Save Changes"}
+            Save Changes
           </Button>
 
           <Button
@@ -94,32 +121,45 @@ function QuestionSetDetails() {
           </Button>
         </div>
       </div>
-
-      {/* Editable questions */}
-      <div className="space-y-4 lg:h-125 h-full overflow-y-auto">
-        {questions.map((q, index) => (
-          <EditableQuestionCard
-            key={q._id || index}
-            index={index}
-            question={q}
-            onChange={handleQuestionChange}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
-
-      {/* Save Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showSaveConfirm}
-        title="Save Changes?"
-        message="Are you sure you want to save the updated questions?"
-        confirmText="Save"
-        cancelText="Cancel"
-        onConfirm={confirmSave}
-        onCancel={() => setShowSaveConfirm(false)}
-      />
     </div>
-  );
+
+    {/* Scrollable questions area */}
+    <div
+      ref={scrollContainerRef}
+      className="flex-1 overflow-y-auto space-y-4 p-2"
+    >
+      {questions.map((q, index) => (
+        <EditableQuestionCard
+          key={q._id || index}
+          index={index}
+          question={q}
+          onChange={handleQuestionChange}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+
+    {/* Add Question button */}
+    <div className="flex justify-end p-3 shadow-sm bg-white">
+      <Button onClick={handleAddQuestion}>+ Add Question</Button>
+    </div>
+
+    {/* Save Confirmation Dialog */}
+    <ConfirmDialog
+      isOpen={showSaveConfirm}
+      loading={saving}
+      title="Save Changes?"
+      message="Are you sure you want to save the updated questions?"
+      confirmText="Save"
+      cancelText="Cancel"
+      onConfirm={confirmSave}
+      onCancel={() => {
+        if (!saving) setShowSaveConfirm(false);
+      }}
+    />
+  </div>
+);
+
 }
 
 export default QuestionSetDetails;
