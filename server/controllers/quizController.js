@@ -2,6 +2,8 @@ const Quiz = require("../models/Quiz");
 const crypto = require("crypto");
 const QuestionSet = require("../models/QuestionSet");
 const QuizAttempt = require("../models/QuizAttempt");
+require("dotenv").config();
+
 
 exports.createQuiz = async (req, res) => {
   const { title, questionSetId, duration } = req.body;
