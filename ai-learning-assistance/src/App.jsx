@@ -10,6 +10,9 @@ import Quiz from './pages/Quiz'
 import QuizBasicInfo from './components/quiz/QuizForm'
 import SignUp from './pages/Auth/SignUp'
 import SignIn from './pages/Auth/Signin'
+import QuizPage from './pages/QuizPage'
+import QuizResult from './components/quiz/QuizResult'
+import StartQuizCard from './components/quiz/StartQuizCard'
 
 function App() {
   return (
@@ -26,13 +29,18 @@ function App() {
           <Route path='/quizzes/create' element={<QuizBasicInfo />} />
           <Route path="/quizzes/edit/:id" element={<QuizBasicInfo />} />
 
-          
+
 
 
           <Route path='*' element={<>not found</>} />
         </Route>
-        <Route path='/signup' element={<SignUp/>}/>
-          <Route path='/signin' element={<SignIn/>}/>
+        <Route path='/signup' element={<SignUp />} />
+        <Route path='/signin' element={<SignIn />} />
+        <Route path='/quiz/:code/attempt/:token' element={<QuizPage />} />
+        <Route path="/quizresult/:id" element={<QuizResult />} />
+        <Route path="/startquiz/:code" element={<StartQuizCard />} />
+
+
 
       </Routes>
 

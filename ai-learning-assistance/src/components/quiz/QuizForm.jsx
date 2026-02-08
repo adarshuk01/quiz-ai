@@ -10,35 +10,49 @@ import Breadcrumb from "../common/Breadcrumb";
 
 function QuizBasicInfo() {
   const navigate = useNavigate();
-  const { id } = useParams(); // 👈 check if edit mode
+  const { id } = useParams();
   const isEditMode = Boolean(id);
 
-  const { questionSets,getMyQuestionSets } = useQuestionSets();
+  const { questionSets, getMyQuestionSets } = useQuestionSets();
   const { createQuiz, updateQuiz, getQuizById, loading } = useQuiz();
 
   const [form, setForm] = useState({
     title: "",
     questionSet: "",
     duration: 30,
+    pauseAt: "", // NEW FIELD
   });
 
   const [errors, setErrors] = useState({});
 
-   useEffect(() => {
-      getMyQuestionSets();
-    }, []);
+  useEffect(() => {
+    getMyQuestionSets();
+  }, []);
 
-  // 🔹 Load quiz in edit mode
+
+  const toLocalDateTimeInput = (dateString) => {
+  if (!dateString) return "";
+  const d = new Date(dateString);
+  const offset = d.getTimezoneOffset();
+  d.setMinutes(d.getMinutes() - offset);
+  return d.toISOString().slice(0, 16);
+};
+
+
+  // Load quiz in edit mode
   useEffect(() => {
     const loadQuiz = async () => {
       if (!isEditMode) return;
 
       try {
         const quiz = await getQuizById(id);
+        console.log(quiz);
+
         setForm({
           title: quiz.title || "",
           questionSet: quiz.questionSet?._id || "",
           duration: quiz.duration || 30,
+          pauseAt: toLocalDateTimeInput(quiz.autoPauseAt),
         });
       } catch (err) {
         console.error("LOAD QUIZ ERROR:", err);
@@ -99,19 +113,18 @@ function QuizBasicInfo() {
     e.preventDefault();
     if (!validate()) return;
 
+    const payload = {
+      title: form.title,
+      questionSetId: form.questionSet,
+      duration: form.duration,
+      autoPauseAt: form.pauseAt || null, // NEW
+    };
+
     try {
       if (isEditMode) {
-        await updateQuiz(id, {
-          title: form.title,
-          questionSetId: form.questionSet,
-          duration: form.duration,
-        });
+        await updateQuiz(id, payload);
       } else {
-        await createQuiz({
-          title: form.title,
-          questionSetId: form.questionSet,
-          duration: form.duration,
-        });
+        await createQuiz(payload);
       }
 
       navigate("/quizzes");
@@ -138,12 +151,10 @@ function QuizBasicInfo() {
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-md p-6 space-y-6"
         >
-          {/* Header */}
           <h2 className="text-lg font-semibold text-gray-800">
             {isEditMode ? "Edit Quiz" : "Create Quiz"}
           </h2>
 
-          {/* Quiz Title */}
           <Input
             label="Quiz Title"
             name="title"
@@ -153,7 +164,6 @@ function QuizBasicInfo() {
             error={errors.title}
           />
 
-          {/* Question Set */}
           <div>
             <Select
               label="Source Question Set"
@@ -173,15 +183,12 @@ function QuizBasicInfo() {
                   </strong>
                   <br />
                   This set was generated from "
-                  {selectedSet.source || selectedSet.label}". All{" "}
-                  {selectedSet.questions} questions will be included
-                  unless you edit the set first.
+                  {selectedSet.source || selectedSet.label}".
                 </p>
               </div>
             )}
           </div>
 
-          {/* Duration */}
           <Input
             label="Duration (Minutes)"
             type="number"
@@ -191,7 +198,15 @@ function QuizBasicInfo() {
             error={errors.duration}
           />
 
-          {/* Footer */}
+          {/* NEW: Auto Pause Time */}
+          <Input
+            label="Auto Pause At (Optional)"
+            type="datetime-local"
+            name="pauseAt"
+            value={form.pauseAt}
+            onChange={handleChange}
+          />
+
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
@@ -202,8 +217,8 @@ function QuizBasicInfo() {
             </Button>
 
             <Button type="submit" loading={loading}>
-  {isEditMode ? "Update Quiz" : "Create Quiz"}
-</Button>
+              {isEditMode ? "Update Quiz" : "Create Quiz"}
+            </Button>
           </div>
         </form>
       </div>

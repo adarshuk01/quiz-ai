@@ -58,7 +58,7 @@ function Quiz() {
             {/* View */}
             <button
               onClick={() =>
-                window.open(`/quiz/${row.accessCode}`, "_blank")
+                window.open(`/startquiz/${row.accessCode}`, "_blank")
               }
               className="hover:underline flex items-center gap-1"
             >

@@ -30,6 +30,17 @@ const QuizSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    // NEW FIELDS
+    isPaused: {
+      type: Boolean,
+      default: false,
+    },
+
+    autoPauseAt: {
+      type: Date, // scheduled pause time
+      default: null,
+    },
   },
   { timestamps: true }
 );

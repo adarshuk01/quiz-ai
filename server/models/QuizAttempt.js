@@ -18,19 +18,38 @@ const AttemptSchema = new mongoose.Schema(
 
     expiresAt: Date,
 
+    // UPDATED ANSWER STRUCTURE
     answers: [
       {
         questionIndex: Number,
-        selectedOption: Number,
+        selectedOption: {
+          type: Number,
+          default: null,
+        },
+        isCorrect: Boolean,
+        status: {
+          type: String,
+          enum: ["correct", "incorrect", "not_attempted"],
+        },
       },
     ],
 
     score: Number,
+    incorrect: {
+      type: Number,
+      default: 0,
+    },
+    notAttempted: {
+      type: Number,
+      default: 0,
+    },
 
     isSubmitted: {
       type: Boolean,
       default: false,
     },
+
+    submittedAt: Date,
   },
   { timestamps: true }
 );
