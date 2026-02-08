@@ -10,42 +10,56 @@ const ai = require("../config/ai"); // your AI config
 
 exports.generateFromTopic = async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { topic, count } = req.body;
 
     if (!topic) {
       return res.status(400).json({ message: "Topic required" });
     }
 
-    const prompt = `
-Generate 10 multiple choice questions about "${topic}".
+    const totalRequired = Number(count) || 50; // default 50
+    const batchSize = 50;
+
+    const generateBatch = async (batchCount) => {
+      const prompt = `
+Generate ${batchCount} multiple choice questions about "${topic}".
 
 Rules:
-- Each question must have exactly 4 options 
+- Each question must have exactly 4 options
 - Only one option must be correct
 - correctAnswer must be the index (0,1,2,3)
 - Do NOT repeat questions
 - Do NOT include explanations
 - Return ONLY valid JSON array
-
-Format:
-[
-  {
-    "question": "string",
-    "options": ["string","string","string","string"],
-    "correctAnswer": number
-  }
-]
 `;
 
-    const aiResponse = await ai.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-    });
+      const aiResponse = await ai.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        response_format: { type: "json_object" }, // or json_schema
+      });
 
-    const text = aiResponse.choices[0].message.content;
+      const text = aiResponse.choices[0].message.content;
 
-    const questions = JSON.parse(text);
+      const jsonMatch = text.match(/\[\s*{[\s\S]*}\s*\]/);
+      if (!jsonMatch) throw new Error("Invalid JSON from AI");
+
+      return JSON.parse(jsonMatch[0]);
+    };
+
+    let questions = [];
+
+    // keep generating until we reach required count
+    while (questions.length < totalRequired) {
+      const remaining = totalRequired - questions.length;
+      const currentBatchSize = Math.min(batchSize, remaining);
+
+      const batch = await generateBatch(currentBatchSize);
+      questions = [...questions, ...batch];
+    }
+
+    // trim to exact count
+    questions = questions.slice(0, totalRequired);
 
     const questionSet = await QuestionSet.create({
       topic,
@@ -63,6 +77,9 @@ Format:
     res.status(500).json({ message: "Failed to generate questions" });
   }
 };
+
+
+
 
 
 exports.deleteQuestionSet = async (req, res) => {
@@ -200,7 +217,7 @@ exports.processPDF = async (req, res) => {
       sourceFile: req.file.originalname,
       topic,
       questions: allQuestions,
-      createdBy:req.user.id
+      createdBy: req.user.id
     });
 
     res.status(201).json(saved);

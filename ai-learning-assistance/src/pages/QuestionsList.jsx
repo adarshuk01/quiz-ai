@@ -91,10 +91,10 @@ function QuestionSetDetails() {
   if (!currentQuestionSet) return <p className="p-6">No data</p>;
 
   return (
-  <div className="mx-auto lg:h-[calc(95vh-80px)] h-[90vh] flex flex-col">
+  <div className="mx-auto lg:h-[calc(95vh-80px)] h-[90vh]  flex flex-col">
     {/* Sticky Header */}
     <div className="sticky top-0 z-10 bg-white shadow-sm p-4 rounded-lg">
-      <div className="flex justify-between items-center flex-wrap gap-4">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <div>
           <h2 className="lg:text-2xl text-lg font-semibold capitalize text-gray-800">
             {currentQuestionSet.topic}

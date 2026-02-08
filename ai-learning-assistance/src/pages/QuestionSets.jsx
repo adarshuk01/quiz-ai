@@ -56,7 +56,9 @@ function QuestionSets() {
       header: "Topic",
       render: (row) => (
         <div>
-          <p className="font-medium text-gray-800 capitalize">{row.topic}</p>
+          <p className="font-medium text-gray-800 capitalize">
+            {row.topic}
+          </p>
           {row.source && (
             <p className="text-xs text-gray-500">
               From "{row.source}"
@@ -125,20 +127,15 @@ function QuestionSets() {
         }
       />
 
-      <div className="mt-6">
+      <div className="mt-6 h-[10%] overflow-scroll">
         <DataTable
           columns={columns}
           data={filtered}
           searchValue={search}
           onSearch={setSearch}
+          loading={loading}   // ← pulse loading inside table
         />
       </div>
-
-      {loading && (
-        <p className="text-center mt-4 text-gray-500">
-          Loading question sets...
-        </p>
-      )}
 
       {/* Confirm Dialog */}
       <ConfirmDialog
@@ -148,7 +145,7 @@ function QuestionSets() {
         confirmText={deleting ? "Deleting..." : "Delete"}
         onCancel={() => setIsConfirmOpen(false)}
         onConfirm={handleDelete}
-        loading={loading}
+        loading={deleting}   // ← correct loading state for delete
       />
     </div>
   );

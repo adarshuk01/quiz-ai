@@ -8,6 +8,8 @@ import UploadPdf from './components/QuestionSets/UploadPdf'
 import QuestionSetDetails from './pages/QuestionsList'
 import Quiz from './pages/Quiz'
 import QuizBasicInfo from './components/quiz/QuizForm'
+import SignUp from './pages/Auth/SignUp'
+import SignIn from './pages/Auth/Signin'
 
 function App() {
   return (
@@ -24,9 +26,14 @@ function App() {
           <Route path='/quizzes/create' element={<QuizBasicInfo />} />
           <Route path="/quizzes/edit/:id" element={<QuizBasicInfo />} />
 
+          
+
 
           <Route path='*' element={<>not found</>} />
         </Route>
+        <Route path='/signup' element={<SignUp/>}/>
+          <Route path='/signin' element={<SignIn/>}/>
+
       </Routes>
 
     </>

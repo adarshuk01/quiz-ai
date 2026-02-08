@@ -56,7 +56,7 @@ function EditableQuestionCard({ index, question, onChange, onDelete }) {
             value={question.question}
             onChange={handleQuestionChange}
             className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            rows={2}
+            rows={4}
           />
         </div>
 
@@ -69,14 +69,14 @@ function EditableQuestionCard({ index, question, onChange, onDelete }) {
             Select the radio button to mark the correct answer.
           </p>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {question.options.map((opt, i) => {
               const isCorrect = i === question.correctAnswer;
 
               return (
-                <label
+                <div
                   key={i}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm cursor-pointer
+                  className={`flex items-start gap-3 px-4 py-3 rounded-lg border
                   ${
                     isCorrect
                       ? "bg-green-50 border-green-400"
@@ -88,17 +88,19 @@ function EditableQuestionCard({ index, question, onChange, onDelete }) {
                     name={`correct-${index}`}
                     checked={isCorrect}
                     onChange={() => handleCorrectChange(i)}
+                    className="mt-1"
                   />
 
-                  <input
-                    type="text"
+                  <textarea
                     value={opt}
                     onChange={(e) =>
                       handleOptionChange(i, e.target.value)
                     }
-                    className="flex-1 bg-transparent outline-none"
+                    rows={2}
+                    className="flex-1 bg-transparent outline-none text-sm resize-none"
+                    placeholder={`Option ${i + 1}`}
                   />
-                </label>
+                </div>
               );
             })}
           </div>

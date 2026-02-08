@@ -4,6 +4,7 @@ function Input({
   label,
   icon,
   error,
+  type,
   className = "",
   inputClassName = "",
   ...props
@@ -26,6 +27,7 @@ function Input({
         {icon && <span className="text-gray-400 mr-2">{icon}</span>}
 
         <input
+        type={type}
           className={`w-full outline-none text-sm bg-transparent ${inputClassName}`}
           {...props}
         />

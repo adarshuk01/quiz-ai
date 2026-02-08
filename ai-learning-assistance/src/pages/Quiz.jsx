@@ -51,52 +51,51 @@ function Quiz() {
       accessor: "accessCode",
     },
     {
-  header: "Actions",
-  render: (row) => (
-    <div className="flex flex-col gap-2 text-sm text-gray-500">
-      <div className="flex gap-3">
-        {/* View */}
-        <button
-          onClick={() =>
-            window.open(`/quiz/${row.accessCode}`, "_blank")
-          }
-          className="hover:underline flex items-center gap-1"
-        >
-          <FaEye /> View
-        </button>
+      header: "Actions",
+      render: (row) => (
+        <div className="flex flex-col gap-2 text-sm text-gray-500">
+          <div className="flex gap-3">
+            {/* View */}
+            <button
+              onClick={() =>
+                window.open(`/quiz/${row.accessCode}`, "_blank")
+              }
+              className="hover:underline flex items-center gap-1"
+            >
+              <FaEye /> View
+            </button>
 
-        {/* Edit */}
-        <button
-          onClick={() => navigate(`/quizzes/edit/${row._id}`)}
-          className="hover:underline flex items-center gap-1"
-        >
-          <FaEdit /> Edit
-        </button>
+            {/* Edit */}
+            <button
+              onClick={() => navigate(`/quizzes/edit/${row._id}`)}
+              className="hover:underline flex items-center gap-1"
+            >
+              <FaEdit /> Edit
+            </button>
 
-        {/* Delete */}
-        <button
-          onClick={() => handleDelete(row._id)}
-          className="text-red-600 hover:underline flex items-center gap-1"
-        >
-          <FaTrash /> Delete
-        </button>
-      </div>
+            {/* Delete */}
+            <button
+              onClick={() => handleDelete(row._id)}
+              className="text-red-600 hover:underline flex items-center gap-1"
+            >
+              <FaTrash /> Delete
+            </button>
+          </div>
 
-      {/* Copy link button at bottom */}
-      <button
-        onClick={() =>
-          navigator.clipboard.writeText(
-            `${window.location.origin}/quiz/${row.accessCode}`
-          )
-        }
-        className="text-indigo-600 hover:underline text-xs self-start"
-      >
-        Copy quiz link
-      </button>
-    </div>
-  ),
-}
-,
+          {/* Copy link button */}
+          <button
+            onClick={() =>
+              navigator.clipboard.writeText(
+                `${window.location.origin}/quiz/${row.accessCode}`
+              )
+            }
+            className="text-indigo-600 hover:underline text-xs self-start"
+          >
+            Copy quiz link
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -119,12 +118,9 @@ function Quiz() {
           data={filteredData}
           searchValue={search}
           onSearch={setSearch}
+          loading={loading}   // ← pulse loading applied
         />
       </div>
-
-      {loading && (
-        <p className="text-center text-gray-400 mt-4">Loading...</p>
-      )}
     </div>
   );
 }

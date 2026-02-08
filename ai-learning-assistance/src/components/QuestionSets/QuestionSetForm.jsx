@@ -14,7 +14,7 @@ function QuestionSetForm() {
   const [form, setForm] = useState({
     topic: "",
     difficulty: "medium",
-    questions: 15,
+    count: 15,
     instructions: "",
   });
 
@@ -29,7 +29,7 @@ function QuestionSetForm() {
     setForm({
       topic: "",
       difficulty: "medium",
-      questions: 15,
+      count: 15,
       instructions: "",
     });
     setErrors({});
@@ -43,8 +43,8 @@ function QuestionSetForm() {
       newErrors.topic = "Topic is required";
     }
 
-    if (!form.questions || form.questions < 5 || form.questions > 50) {
-      newErrors.questions = "Must be between 5 and 50";
+    if (!form.count || form.count < 5 || form.count > 50) {
+      newErrors.count = "Must be between 5 and 50";
     }
 
     setErrors(newErrors);
@@ -121,10 +121,10 @@ function QuestionSetForm() {
             <Input
               label="Number of questions"
               type="number"
-              name="questions"
-              value={form.questions}
+              name="count"
+              value={form.count}
               onChange={handleChange}
-              error={errors.questions}
+              error={errors.count}
               min={5}
               max={50}
             />
