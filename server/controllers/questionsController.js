@@ -78,6 +78,41 @@ Rules:
   }
 };
 
+exports.generateManualFromTopic = async (req, res) => {
+  try {
+    const { topic, count } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ message: "Topic required" });
+    }
+
+    const totalRequired = Number(count) || 10; // default 10
+
+    // Create empty questions
+    const questions = Array.from({ length: totalRequired }, () => ({
+      question: "",
+      options: ["", "", "", ""],
+      correctAnswer: 0,
+    }));
+
+    const questionSet = await QuestionSet.create({
+      topic,
+      questions,
+      createdBy: req.user._id,
+    });
+
+    res.json({
+      message: "Manual question set created",
+      questionSetId: questionSet._id,
+      questions,
+    });
+  } catch (err) {
+    console.error("MANUAL GENERATE ERROR:", err);
+    res.status(500).json({ message: "Failed to create manual question set" });
+  }
+};
+
+
 
 
 

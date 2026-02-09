@@ -12,6 +12,7 @@ const {
   updateQuiz,
   getQuizResult,
   setQuizPauseState,
+  getQuizAnalytics,
 } = require("../controllers/quizController");
 
 // Admin
@@ -20,7 +21,9 @@ router.get("/my-quizzes", protect, getUserQuizzes);
 router.delete("/:id", protect, deleteQuiz);
 router.get("/:id", protect, getQuizById);
 router.put("/:id", protect, updateQuiz);
-router.patch("/quiz/:quizId/pause",protect, setQuizPauseState);
+router.patch("/:quizId/pause",protect, setQuizPauseState);
+router.get("/analytics/:quizId", getQuizAnalytics);
+
 
 
 

@@ -319,6 +319,7 @@ exports.submitQuiz = async (req, res) => {
   if (attempt.expiresAt < new Date()) {
     return res.status(400).json({
       message: "TIME_EXPIRED",
+       attemptId: attempt._id,
     });
   }
 
@@ -387,6 +388,110 @@ exports.submitQuiz = async (req, res) => {
     notAttempted,
     total: questions.length,
   });
+};
+
+
+// GET /api/quiz/analytics/:quizId
+// GET /api/quiz/analytics/:quizId
+exports.getQuizAnalytics = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+
+    const attempts = await QuizAttempt.find({
+      quiz: quizId,
+      isSubmitted: true,
+    })
+      .populate("quiz") // populate quiz details
+      .sort({ submittedAt: -1 });
+
+    if (!attempts.length) {
+      return res.status(200).json({
+        quiz: null,
+        totalParticipants: 0,
+        averageScore: 0,
+        averagePercentage: 0,
+        students: [],
+      });
+    }
+
+    const quiz = attempts[0].quiz;
+
+    const totalQuestions = quiz.questions
+      ? quiz.questions.length
+      : attempts[0].answers.length;
+
+    let totalScore = 0;
+
+    const students = attempts.map((attempt) => {
+      const correct = attempt.answers.filter(
+        (a) => a.status === "correct"
+      ).length;
+
+      const incorrect = attempt.answers.filter(
+        (a) => a.status === "incorrect"
+      ).length;
+
+      const notAttempted = attempt.answers.filter(
+        (a) => a.status === "not_attempted"
+      ).length;
+
+      const score = attempt.score || correct;
+      totalScore += score;
+
+      const percentage =
+        totalQuestions > 0
+          ? ((score / totalQuestions) * 100).toFixed(2)
+          : 0;
+
+      // time taken in seconds
+      let timeTaken = null;
+      if (attempt.createdAt && attempt.submittedAt) {
+        timeTaken =
+          (new Date(attempt.submittedAt) - new Date(attempt.createdAt)) /
+          1000;
+      }
+
+      
+
+      return {
+        studentName: attempt.studentName,
+        rollNo: attempt.rollNo,
+        correct,
+        incorrect,
+        notAttempted,
+        score,
+        percentage: Number(percentage),
+        submittedAt: attempt.submittedAt,
+        timeTakenSeconds: timeTaken,
+      };
+    });
+
+    
+    // 🔹 Sort students by highest percentage
+    students.sort((a, b) => b.percentage - a.percentage);
+
+    const averageScore = totalScore / attempts.length;
+    const averagePercentage =
+      totalQuestions > 0
+        ? ((averageScore / totalQuestions) * 100).toFixed(2)
+        : 0;
+
+    res.status(200).json({
+      quiz: {
+        title: quiz.title,
+        createdAt: quiz.createdAt,
+        totalQuestions,
+        duration: quiz.duration,
+      },
+      totalParticipants: attempts.length,
+      averageScore: Number(averageScore.toFixed(2)),
+      averagePercentage: Number(averagePercentage),
+      students,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 

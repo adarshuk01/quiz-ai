@@ -5,11 +5,16 @@ import Select from "../common/Select";
 import Textarea from "../common/Textarea";
 import { FiRotateCcw } from "react-icons/fi";
 import { FaWandMagicSparkles } from "react-icons/fa6";
+import { FiEdit3 } from "react-icons/fi";
 import Breadcrumb from "../common/Breadcrumb";
 import { useQuestionSet } from "../../context/QuestionSetContext";
 
 function QuestionSetForm() {
-  const { generateQuestions, loading } = useQuestionSet();
+  const {
+    generateQuestions,
+    generateQuestionsManually,
+    loading,
+  } = useQuestionSet();
 
   const [form, setForm] = useState({
     topic: "",
@@ -51,6 +56,7 @@ function QuestionSetForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // 🔹 AI Generate
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -58,7 +64,19 @@ function QuestionSetForm() {
 
     try {
       await generateQuestions(form);
-      console.log("Questions generated");
+      console.log("AI questions generated");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // 🔹 Manual Generate
+  const handleManualGenerate = async () => {
+    if (!validate()) return;
+
+    try {
+      await generateQuestionsManually(form);
+      console.log("Manual question set created");
     } catch (err) {
       console.error(err);
     }
@@ -140,7 +158,7 @@ function QuestionSetForm() {
           />
 
           {/* Footer */}
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button
               type="button"
               variant="secondary"
@@ -150,10 +168,25 @@ function QuestionSetForm() {
               Reset
             </Button>
 
-            <Button icon={<FaWandMagicSparkles />} loading={loading}>
-  Generate
-</Button>
+            {/* Manual Generate */}
+            <Button
+              type="button"
+              variant="secondary"
+              icon={<FiEdit3 />}
+              onClick={handleManualGenerate}
+              loading={loading}
+            >
+              Manual
+            </Button>
 
+            {/* AI Generate */}
+            <Button
+              type="submit"
+              icon={<FaWandMagicSparkles />}
+              loading={loading}
+            >
+              Generate
+            </Button>
           </div>
         </form>
       </div>

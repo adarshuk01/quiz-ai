@@ -15,7 +15,7 @@ function QuestionPalette({
         Navigate to any question instantly
       </p>
 
-      <div className="grid grid-cols-5 gap-2 mb-6">
+      <div className="grid grid-cols-5 lg:grid-cols-8 gap-2 mb-6">
         {Array.from({ length: total }).map((_, i) => {
           const isCurrent = i === currentIndex;
           const attempted = answers[i] !== undefined;
@@ -55,9 +55,7 @@ function QuestionPalette({
         </div>
       </div>
 
-      <button className="mt-6 w-full bg-gray-900 text-white py-3 rounded-lg font-medium">
-        Submit Quiz
-      </button>
+    
     </div>
   );
 }

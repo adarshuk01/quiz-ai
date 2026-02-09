@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import QuizHeader from "../components/quiz/QuizHeader";
 import QuestionCard from "../components/quiz/QuestionCard";
 import QuestionPalette from "../components/quiz/QuestionPalette";
@@ -25,6 +24,9 @@ function QuizPage() {
   const [submitted, setSubmitted] = useState(false);
   const timerRef = useRef(null);
 
+  const storageAnswersKey = `quiz_answers_${token}`;
+  const storageCurrentKey = `quiz_current_${token}`;
+
   // format mm:ss
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -32,13 +34,11 @@ function QuizPage() {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  // fetch quiz questions and load backend timer
+  // Fetch quiz, load backend timer, answers, and current question
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await axiosInstance.get(
-          `/quiz/code/${code}`
-        );
+        const res = await axiosInstance.get(`/quiz/code/${code}`);
 
         setQuestions(res.data.questions || []);
         setQuizTitle(res.data.title);
@@ -59,6 +59,23 @@ function QuizPage() {
         );
 
         setTimeLeft(remaining);
+
+        // Load persisted answers
+        const savedAnswers = localStorage.getItem(storageAnswersKey);
+        if (savedAnswers) {
+          const parsed = JSON.parse(savedAnswers);
+          answersRef.current = parsed;
+          setAnswers(parsed);
+        }
+
+        // Load persisted current question
+        const savedCurrent = localStorage.getItem(storageCurrentKey);
+        if (savedCurrent) {
+          const index = Number(savedCurrent);
+          if (index >= 0 && index < res.data.questions.length) {
+            setCurrent(index);
+          }
+        }
       } catch (err) {
         console.error("Failed to load quiz", err);
       } finally {
@@ -69,7 +86,7 @@ function QuizPage() {
     fetchQuiz();
   }, [code, token, navigate]);
 
-  // timer logic based on backend expiry
+  // Timer logic
   useEffect(() => {
     if (submitted) return;
 
@@ -80,11 +97,7 @@ function QuizPage() {
 
       if (!endTime) return;
 
-      const remaining = Math.max(
-        0,
-        Math.floor((endTime - Date.now()) / 1000)
-      );
-
+      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
       setTimeLeft(remaining);
 
       if (remaining <= 0) {
@@ -96,52 +109,67 @@ function QuizPage() {
     return () => clearInterval(timerRef.current);
   }, [submitted, token]);
 
-const handleSelect = (optionIndex) => {
-  const updated = { ...answersRef.current, [current]: optionIndex };
+  // Handle option select
+  const handleSelect = (optionIndex) => {
+    const updated = { ...answersRef.current, [current]: optionIndex };
+    answersRef.current = updated;
+    setAnswers(updated);
 
-  answersRef.current = updated;
-  setAnswers(updated);
-};
+    // Persist answers
+    localStorage.setItem(storageAnswersKey, JSON.stringify(updated));
+  };
 
+  // Handle current question change
+  const handleSetCurrent = (index) => {
+    setCurrent(index);
+    localStorage.setItem(storageCurrentKey, index);
+  };
 
- const handleSubmit = async (auto = false) => {
-  if (submitted) return;
-  setSubmitted(true);
-  clearInterval(timerRef.current);
+  // Handle quiz submission
+  const handleSubmit = async (auto = false) => {
+    if (submitted) return;
+    setSubmitted(true);
+    clearInterval(timerRef.current);
 
-  try {
-    const liveAnswers = answersRef.current;
+    try {
+      const liveAnswers = answersRef.current;
 
-    const formattedAnswers = Object.keys(liveAnswers).map((key) => ({
-      questionIndex: Number(key),
-      selectedOption: liveAnswers[key],
-    }));
+      const formattedAnswers = Object.keys(liveAnswers).map((key) => ({
+        questionIndex: Number(key),
+        selectedOption: liveAnswers[key],
+      }));
 
-    const res = await axiosInstance.post(
-      `/quiz/${code}/submit`,
-      {
+      const res = await axiosInstance.post(`/quiz/${code}/submit`, {
         attemptToken: token,
         answers: formattedAnswers,
+      });
+
+      // Clean up localStorage
+      localStorage.removeItem(`quiz_end_${token}`);
+      localStorage.removeItem(storageAnswersKey);
+      localStorage.removeItem(storageCurrentKey);
+
+      navigate(`/quizresult/${res.data.attemptId}`);
+    } catch (err) {
+      console.error("Submit failed", err.message);
+      console.log(err.response?.data);
+
+      if (err.response?.data?.message === "TIME_EXPIRED") {
+        const attemptId = err.response.data.attemptId;
+        if (attemptId) {
+          localStorage.removeItem(`quiz_end_${token}`);
+          localStorage.removeItem(storageAnswersKey);
+          localStorage.removeItem(storageCurrentKey);
+          navigate(`/quizresult/${attemptId}`);
+        } else {
+          alert("Time expired, but no attemptId received.");
+          navigate("/");
+        }
+      } else {
+        alert("Failed to submit quiz");
       }
-    );
-
-    localStorage.removeItem(`quiz_end_${token}`);
-
-   navigate(`/quizresult/${res.data.attemptId}`);
-
-  } catch (err) {
-    console.error("Submit failed", err.message);
-    console.log(err.response?.data);
-
-    if (err.response?.data?.message === "TIME_EXPIRED") {
-         navigate(`/quizresult/${res.data.attemptId}`);
-
-    } else {
-      alert("Failed to submit quiz");
     }
-  }
-};
-
+  };
 
   if (loading) {
     return (
@@ -161,15 +189,11 @@ const handleSelect = (optionIndex) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <QuizHeader
-        title={quizTitle}
-        section="Quiz Section"
-        time={formatTime(timeLeft)}
-      />
+      <QuizHeader title={quizTitle} section={`Question ${current + 1}`} time={formatTime(timeLeft)} />
 
-      <div className="flex flex-1">
+      <div className=" grid lg:grid-cols-8">
         {/* Main question area */}
-        <div className="flex-1 p-4 md:p-6 lg:p-8">
+        <div className="col-span-5 p-4 md:p-6 lg:p-8">
           <QuestionCard
             question={questions[current].question}
             options={questions[current].options}
@@ -183,7 +207,7 @@ const handleSelect = (optionIndex) => {
           <div className="flex justify-between mt-6 gap-3">
             <button
               disabled={current === 0}
-              onClick={() => setCurrent(current - 1)}
+              onClick={() => handleSetCurrent(current - 1)}
               className="px-5 py-2 border rounded-lg text-gray-600 disabled:opacity-50 w-1/2"
             >
               Previous
@@ -198,9 +222,7 @@ const handleSelect = (optionIndex) => {
               </button>
             ) : (
               <button
-                onClick={() =>
-                  setCurrent(Math.min(current + 1, questions.length - 1))
-                }
+                onClick={() => handleSetCurrent(Math.min(current + 1, questions.length - 1))}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg w-1/2"
               >
                 Next Question
@@ -210,12 +232,12 @@ const handleSelect = (optionIndex) => {
         </div>
 
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-80 border-l bg-white">
+        <div className="hidden col-span-3 lg:block   bg-white">
           <QuestionPalette
             total={questions.length}
             currentIndex={current}
             answers={answers}
-            onNavigate={setCurrent}
+            onNavigate={handleSetCurrent}
             onSubmit={() => handleSubmit(false)}
           />
         </div>
@@ -231,28 +253,22 @@ const handleSelect = (optionIndex) => {
 
       {/* Mobile Right Drawer */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition ${
-          paletteOpen ? "visible" : "invisible"
-        }`}
+        className={`fixed inset-0 z-40 lg:hidden transition ${paletteOpen ? "visible" : "invisible"}`}
       >
         <div
           onClick={() => setPaletteOpen(false)}
-          className={`absolute inset-0 bg-black/40 transition-opacity ${
-            paletteOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/40 transition-opacity ${paletteOpen ? "opacity-100" : "opacity-0"}`}
         />
 
         <div
-          className={`absolute right-0 top-0 h-full w-72 bg-white shadow-lg transform transition-transform ${
-            paletteOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute right-0 top-0 h-full w-72 bg-white shadow-lg transform transition-transform ${paletteOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <QuestionPalette
             total={questions.length}
             currentIndex={current}
             answers={answers}
             onNavigate={(i) => {
-              setCurrent(i);
+              handleSetCurrent(i);
               setPaletteOpen(false);
             }}
             onSubmit={() => handleSubmit(false)}

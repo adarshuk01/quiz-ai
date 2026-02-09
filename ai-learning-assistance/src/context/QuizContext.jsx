@@ -87,6 +87,28 @@ export const QuizProvider = ({ children }) => {
     }
   };
 
+  // NEW: Toggle pause/resume
+  const toggleQuizPause = async (quizId, currentState) => {
+    try {
+      const res = await axiosInstance.patch(`/quiz/${quizId}/pause`, {
+        isPaused: !currentState,
+      });
+
+      // Update local quizzes state
+      setQuizzes((prev) =>
+        prev.map((q) =>
+          q._id === quizId ? { ...q, isPaused: res.data.isPaused } : q
+        )
+      );
+
+      return res.data.isPaused;
+    } catch (err) {
+      console.error("Failed to toggle pause", err);
+      throw err;
+    }
+  };
+
+
   return (
     <QuizContext.Provider
       value={{
@@ -97,6 +119,7 @@ export const QuizProvider = ({ children }) => {
         getQuizById,
         updateQuiz,
         deleteQuiz,
+        toggleQuizPause
       }}
     >
       {children}

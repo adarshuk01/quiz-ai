@@ -40,6 +40,32 @@ export const QuestionSetProvider = ({ children }) => {
     }
   };
 
+   const generateQuestionsManually = async (formData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await axiosInstance.post(
+        "/questionsets/generate-manual",
+        formData
+      );
+
+      console.log(res.data);
+      
+
+      setGeneratedQuestions(res.data.questions || []);
+      navigate(`/question-sets/${res.data.questionSetId}`)
+      return res.data;
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to generate questions"
+      );
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
    // 🔹 Generate questions
   const generateQuestionsFromPdf = async (formData) => {
     setLoading(true);
@@ -137,7 +163,8 @@ export const QuestionSetProvider = ({ children }) => {
         generateQuestions,
         getMyQuestionSets,
         getQuestionSetById,
-        deleteQuestionSet
+        deleteQuestionSet,
+        generateQuestionsManually
 
       }}
     >

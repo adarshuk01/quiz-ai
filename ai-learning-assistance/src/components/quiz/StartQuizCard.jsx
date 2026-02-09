@@ -61,8 +61,8 @@ function StartQuizCard() {
         state: { name, roll, quiz },
       });
     } catch (err) {
-      console.error("Failed to start quiz", err);
-      alert("Failed to start quiz. Please try again.");
+      console.error("Failed to start quiz", err?.response?.data);
+      alert( err?.response?.data?.message);
     } finally {
       setStarting(false);
     }

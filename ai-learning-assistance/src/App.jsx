@@ -13,6 +13,8 @@ import SignIn from './pages/Auth/Signin'
 import QuizPage from './pages/QuizPage'
 import QuizResult from './components/quiz/QuizResult'
 import StartQuizCard from './components/quiz/StartQuizCard'
+import NotFound from './pages/NotFound'
+import QuizDetails from './pages/QuizDetails'
 
 function App() {
   return (
@@ -29,17 +31,17 @@ function App() {
           <Route path='/quizzes/create' element={<QuizBasicInfo />} />
           <Route path="/quizzes/edit/:id" element={<QuizBasicInfo />} />
 
+        <Route path='/quizdetails/:quizId' element={<QuizDetails/>}/>
 
 
 
-          <Route path='*' element={<>not found</>} />
+          <Route path='*' element={<NotFound/>} />
         </Route>
         <Route path='/signup' element={<SignUp />} />
         <Route path='/signin' element={<SignIn />} />
         <Route path='/quiz/:code/attempt/:token' element={<QuizPage />} />
         <Route path="/quizresult/:id" element={<QuizResult />} />
         <Route path="/startquiz/:code" element={<StartQuizCard />} />
-
 
 
       </Routes>

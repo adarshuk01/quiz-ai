@@ -36,7 +36,7 @@ function Layout() {
         </div>
 
         {/* Page content */}
-        <main className="flex-1 bg-gray-50 p-2 md:p-4 overflow-y-auto">
+        <main className="flex-1 bg-gray-50 px-4 py-2 md:p-4 overflow-y-auto">
           <Outlet />
         </main>
       </div>
