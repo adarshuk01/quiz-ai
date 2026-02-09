@@ -7,7 +7,7 @@ function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex min-h-screen">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -31,12 +31,12 @@ function Layout() {
       {/* Right side */}
       <div className="flex flex-col flex-1">
         {/* Navbar */}
-        <div className="sticky top-0 z-30">
+        <div className="sticky top-0 z-30 bg-white">
           <Navbar onMenuClick={() => setSidebarOpen(true)} />
         </div>
 
         {/* Page content */}
-        <main className="flex-1 bg-gray-50 px-4 py-2 md:p-4 overflow-y-auto">
+        <main className="flex-1 bg-gray-50 px-4 py-2 md:p-4">
           <Outlet />
         </main>
       </div>

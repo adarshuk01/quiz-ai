@@ -68,7 +68,7 @@ function SignIn() {
     <div className="min-h-screen flex">
       <div className="hidden lg:flex w-1/2 bg-gray-100 items-center justify-center">
         <img
-          src="/signup2.png"
+          src="/signin.png"
           alt="Signup visual"
           className="w-full h-full object-cover"
         />
