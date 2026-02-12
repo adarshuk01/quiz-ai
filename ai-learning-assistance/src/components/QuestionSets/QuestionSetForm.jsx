@@ -20,6 +20,7 @@ function QuestionSetForm() {
     topic: "",
     difficulty: "medium",
     count: 15,
+    language:"",
     instructions: "",
   });
 
@@ -35,6 +36,7 @@ function QuestionSetForm() {
       topic: "",
       difficulty: "medium",
       count: 15,
+      language:"",
       instructions: "",
     });
     setErrors({});
@@ -123,7 +125,7 @@ function QuestionSetForm() {
           />
 
           {/* Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               label="Difficulty"
               name="difficulty"
@@ -145,6 +147,18 @@ function QuestionSetForm() {
               error={errors.count}
               min={5}
               max={50}
+            />
+            <Select
+              label="Language"
+              name="language"
+              value={form.language}
+              onChange={handleChange}
+              options={[
+  { label: "English", value: "English" },
+  { label: "Malayalam", value: "Malayalam" },
+  { label: "Hindi", value: "Hindi" },
+  { label: "Tamil", value: "Tamil" }
+]}
             />
           </div>
 

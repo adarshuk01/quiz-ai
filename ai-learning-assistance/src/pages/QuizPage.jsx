@@ -12,6 +12,8 @@ function QuizPage() {
 
   const [questions, setQuestions] = useState([]);
   const [quizTitle, setQuizTitle] = useState("");
+  const [language, setLanguage] = useState("en");
+
   const [loading, setLoading] = useState(true);
 
   const [current, setCurrent] = useState(0);
@@ -33,6 +35,30 @@ function QuizPage() {
     const s = seconds % 60;
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
+
+  useEffect(() => {
+  // Prevent loading twice
+  if (window.google && window.google.translate) return;
+
+  const addScript = document.createElement("script");
+  addScript.src =
+    "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  addScript.async = true;
+
+  window.googleTranslateElementInit = () => {
+    new window.google.translate.TranslateElement(
+      {
+        pageLanguage: "en",
+        includedLanguages: "en,ml",
+        autoDisplay: false,
+      },
+      "google_translate_element"
+    );
+  };
+
+  document.body.appendChild(addScript);
+}, []);
+
 
   // Fetch quiz, load backend timer, answers, and current question
   useEffect(() => {
@@ -171,6 +197,59 @@ function QuizPage() {
     }
   };
 
+  const translateText = async (text, targetLang) => {
+  if (targetLang === "en") return text;
+
+  try {
+    const res = await fetch(
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(
+        text
+      )}`
+    );
+
+    const data = await res.json();
+    return data[0].map((item) => item[0]).join("");
+  } catch (err) {
+    console.error("Translation failed", err);
+    return text;
+  }
+};
+
+
+const handleLanguageChange = async (lang) => {
+  setLanguage(lang);
+
+  if (lang === "en") {
+    // Reload original questions
+    const res = await axiosInstance.get(`/quiz/code/${code}`);
+    setQuestions(res.data.questions || []);
+    return;
+  }
+
+  // Translate all questions
+  const translatedQuestions = await Promise.all(
+    questions.map(async (q) => {
+      const translatedQuestion = await translateText(q.question, lang);
+
+      const translatedOptions = await Promise.all(
+        q.options.map((opt) => translateText(opt, lang))
+      );
+
+      return {
+        ...q,
+        question: translatedQuestion,
+        options: translatedOptions,
+      };
+    })
+  );
+
+  setQuestions(translatedQuestions);
+};
+
+
+
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -189,7 +268,26 @@ function QuizPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Hidden Google Translate Element */}
+<div id="google_translate_element" style={{ display: "none" }}></div>
       <QuizHeader title={quizTitle} section={`Question ${current + 1}`} time={formatTime(timeLeft)} />
+      <div className="flex justify-end px-6 py-2 bg-white border-b border-gray-300">
+        <div className="flex gap-2">
+          <h3>Select your language :</h3>
+  <select
+    value={language}
+    onChange={(e) => handleLanguageChange(e.target.value)}
+    className="border px-3 py-1 rounded-md text-sm"
+  >
+    <option value="en">English</option>
+    <option value="ml">Malayalam</option>
+  </select>
+  </div>
+
+  
+  
+</div>
+
 
       <div className=" grid lg:grid-cols-8">
         {/* Main question area */}

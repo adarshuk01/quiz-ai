@@ -10,59 +10,99 @@ const ai = require("../config/ai"); // your AI config
 
 exports.generateFromTopic = async (req, res) => {
   try {
-    const { topic, count } = req.body;
+    const { topic, count, language } = req.body;
 
     if (!topic) {
       return res.status(400).json({ message: "Topic required" });
     }
 
-    const totalRequired = Number(count) || 50; // default 50
-    const batchSize = 50;
+    const allowedLanguages = ["English", "Malayalam", "Hindi", "Tamil"];
+    const selectedLanguage =
+      language && allowedLanguages.includes(language)
+        ? language
+        : "English";
 
-    const generateBatch = async (batchCount) => {
+    const totalRequired = Number(count) || 50;
+    const batchSize = 20; // safer than 50 for 8B model
+
+    const generateBatch = async (batchCount, retry = 0) => {
       const prompt = `
-Generate ${batchCount} multiple choice questions about "${topic}".
+Generate ${batchCount} multiple choice questions about "${topic}" strictly in ${selectedLanguage}.
 
-Rules:
+STRICT RULES:
+- Return ONLY valid JSON
+- Return ONLY a JSON array
+- Do NOT translate JSON keys
+- Keys must be exactly: question, options, correctAnswer
 - Each question must have exactly 4 options
-- Only one option must be correct
-- correctAnswer must be the index (0,1,2,3)
+- correctAnswer must be a NUMBER (0,1,2,3)
+- No explanations
+- No text before or after JSON
 - Do NOT repeat questions
-- Do NOT include explanations
-- Return ONLY valid JSON array
+
+FORMAT:
+[
+  {
+    "question": "string",
+    "options": ["string","string","string","string"],
+    "correctAnswer": 0
+  }
+]
 `;
 
       const aiResponse = await ai.chat.completions.create({
         model: "llama-3.1-8b-instant",
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        response_format: { type: "json_object" }, // or json_schema
+        temperature: 0.2,
       });
 
-      const text = aiResponse.choices[0].message.content;
+      const text = aiResponse.choices[0].message.content.trim();
 
-      const jsonMatch = text.match(/\[\s*{[\s\S]*}\s*\]/);
-      if (!jsonMatch) throw new Error("Invalid JSON from AI");
+      try {
+        const parsed = JSON.parse(text);
 
-      return JSON.parse(jsonMatch[0]);
+        if (!Array.isArray(parsed)) {
+          throw new Error("Not an array");
+        }
+
+        return parsed;
+      } catch (err) {
+        console.log("⚠️ Invalid JSON. Retrying...");
+        console.log("Raw AI Response:", text);
+
+        if (retry < 2) {
+          return generateBatch(batchCount, retry + 1);
+        } else {
+          throw new Error("Failed after retries");
+        }
+      }
     };
 
     let questions = [];
 
-    // keep generating until we reach required count
     while (questions.length < totalRequired) {
       const remaining = totalRequired - questions.length;
       const currentBatchSize = Math.min(batchSize, remaining);
 
       const batch = await generateBatch(currentBatchSize);
-      questions = [...questions, ...batch];
+
+      // Remove duplicates inside same topic
+      const existingQuestions = new Set(
+        questions.map((q) => q.question.trim())
+      );
+
+      const filteredBatch = batch.filter(
+        (q) => !existingQuestions.has(q.question.trim())
+      );
+
+      questions = [...questions, ...filteredBatch];
     }
 
-    // trim to exact count
     questions = questions.slice(0, totalRequired);
 
     const questionSet = await QuestionSet.create({
       topic,
+      language: selectedLanguage,
       questions,
       createdBy: req.user._id,
     });
@@ -70,13 +110,20 @@ Rules:
     res.json({
       message: "Question set created",
       questionSetId: questionSet._id,
+      language: selectedLanguage,
+      total: questions.length,
       questions,
     });
   } catch (err) {
     console.error("AI GENERATE ERROR:", err);
-    res.status(500).json({ message: "Failed to generate questions" });
+    res.status(500).json({
+      message: "Failed to generate questions",
+      error: err.message,
+    });
   }
 };
+
+
 
 exports.generateManualFromTopic = async (req, res) => {
   try {

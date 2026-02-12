@@ -91,7 +91,7 @@ function QuestionSetDetails() {
   if (!currentQuestionSet) return <p className="p-6">No data</p>;
 
   return (
-  <div className="mx-auto lg:h-[calc(95vh-80px)] h-[90vh]  flex flex-col">
+  <div className="mx-auto lg:h-[calc(95vh-50px)] h-[90vh]  flex flex-col">
     {/* Sticky Header */}
     <div className="sticky top-0 z-10 bg-white shadow-sm p-4 rounded-lg">
       <div className="flex justify-between items-center flex-wrap gap-2">
@@ -106,19 +106,14 @@ function QuestionSetDetails() {
 
         <div className="flex gap-2">
           <Button
-            variant="secondary"
+            variant="primary"
             icon={<FaSave />}
             onClick={() => setShowSaveConfirm(true)}
           >
             Save Changes
           </Button>
 
-          <Button
-            onClick={() => navigate("/question-sets/create-topic")}
-            icon={<FaWandMagicSparkles />}
-          >
-            Create Quiz
-          </Button>
+       
         </div>
       </div>
     </div>
