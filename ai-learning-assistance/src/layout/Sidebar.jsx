@@ -8,9 +8,11 @@ import {
   FiSettings,
   FiCreditCard,
   FiHelpCircle,
+  FiLock,
 } from "react-icons/fi";
 import { FaQuestion, FaWandMagicSparkles } from "react-icons/fa6";
 import { LuFileQuestion } from "react-icons/lu";
+import { CgProfile } from "react-icons/cg";
 
 function Sidebar() {
   const menu = [
@@ -22,8 +24,8 @@ function Sidebar() {
   ];
 
   const settings = [
-    { name: "Preferences", icon: <FiSettings />, path: "/preferences" },
-    { name: "Billing", icon: <FiCreditCard />, path: "/billing" },
+    { name: "My Profile", icon: <CgProfile />, path: "/profile" },
+    { name: "Password & Security", icon: <FiLock />, path: "/security" },
   ];
 
   const linkClass =

@@ -495,3 +495,77 @@ exports.getQuizAnalytics = async (req, res) => {
 };
 
 
+
+
+
+exports.getAttemptReview = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    // 1️⃣ Get attempt
+    const attempt = await QuizAttempt.findById(attemptId).populate("quiz");
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: "Attempt not found",
+      });
+    }
+
+    console.log(attempt);
+    
+
+    // 2️⃣ Get Question Set (assuming quiz refers to QuestionSet)
+    const questionSet = await QuestionSet.findById(attempt.quiz.questionSet);
+
+    if (!questionSet) {
+      return res.status(404).json({
+        success: false,
+        message: "Question set not found",
+      });
+    }
+
+    const result = questionSet.questions.map((question, index) => {
+      const userAnswer = attempt.answers.find(
+        (ans) => ans.questionIndex === index
+      );
+
+      const selectedOption = userAnswer?.selectedOption ?? null;
+      const correctAnswer = question.correctAnswer;
+
+      let status = "not_attempted";
+
+      if (selectedOption === null) {
+        status = "not_attempted";
+      } else if (selectedOption === correctAnswer) {
+        status = "correct";
+      } else {
+        status = "incorrect";
+      }
+
+      return {
+        questionIndex: index,
+        question: question.question,
+        options: question.options,
+        selectedOption,
+        correctAnswer,
+        status,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      student: attempt.studentName,
+      rollNo: attempt.rollNo,
+      score: attempt.score,
+      review: result,
+    });
+  } catch (error) {
+    console.error("Review Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+

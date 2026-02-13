@@ -3,6 +3,7 @@ import React from "react";
 function Textarea({
   label,
   error,
+  rows,
   className = "",
   ...props
 }) {
@@ -15,6 +16,7 @@ function Textarea({
       )}
 
       <textarea
+      rows={rows}
         className={`w-full rounded-lg border px-3 py-2 text-sm bg-white resize-none
         ${error ? "border-red-500" : "border-gray-200"}
         focus:outline-none focus:ring-2 focus:ring-indigo-500`}

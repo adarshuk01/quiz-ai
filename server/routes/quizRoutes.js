@@ -13,6 +13,7 @@ const {
   getQuizResult,
   setQuizPauseState,
   getQuizAnalytics,
+  getAttemptReview,
 } = require("../controllers/quizController");
 
 // Admin
@@ -30,6 +31,8 @@ router.get("/analytics/:quizId", getQuizAnalytics);
 
 // Public
 router.get("/code/:code", getQuizByCode);
+router.get("/review/:attemptId", getAttemptReview);
+
 router.post("/:code/submit", submitQuiz);
 router.post("/:code/start", startQuiz);
 router.get("/result/:attemptId", getQuizResult);

@@ -12,7 +12,7 @@ function Navbar({ onMenuClick }) {
 
   const handleLogout = () => {
     logout();
-    navigate("/signin");
+    navigate("/login");
   };
 
   // close dropdown when clicking outside
