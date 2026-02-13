@@ -3,6 +3,7 @@ import React from "react";
 function Button({
   children,
   onClick,
+  type,
   icon,
   variant = "primary",
   className = "",
@@ -26,6 +27,7 @@ function Button({
     <button
       onClick={onClick}
       disabled={loading || props.disabled}
+      type={type}
       className={`${baseStyles} ${
         loading ? disabledStyles : variants[variant]
       } ${className}`}

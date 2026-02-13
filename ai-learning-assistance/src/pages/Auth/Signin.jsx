@@ -46,23 +46,30 @@ function SignIn() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
+  try {
     const res = await login(form);
 
-    if (res.success) {
+    if (res?.success) {
       navigate("/");
     } else {
-      setErrors({ api: res.message });
+      setErrors({ api: res?.message || "Invalid credentials" });
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    setErrors({ api: "Something went wrong. Please try again." });
+  }
+};
+
+
 
   return (
     <div className="min-h-screen flex">
@@ -103,6 +110,12 @@ function SignIn() {
               error={errors.password}
               placeholder="Enter your password"
             />
+            <Link
+  to="/forgot-password"
+  className="text-sm text-blue-600"
+>
+  Forgot Password?
+</Link>
 
             {errors.api && (
               <p className="text-red-500 text-sm">

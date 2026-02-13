@@ -19,10 +19,14 @@ import ReviewPage from './pages/ReviewPage'
 import MyProfile from './pages/settings/MyProfile'
 import SecuritySettings from './pages/settings/SecuritySettings'
 import ProtectedRoute from './components/ProtectedRoute'
+import { Toaster } from 'react-hot-toast'
+import ForgotPassword from './pages/Auth/ForgotPassword'
+import ResetPassword from './pages/Auth/ResetPassword'
 
 function App() {
   return (
     <>
+    <Toaster position="top-center" />
       <Routes>
         <Route element={<Layout />}>
          <Route element={<ProtectedRoute />}>
@@ -52,6 +56,8 @@ function App() {
         <Route path="/quizresult/:id" element={<QuizResult />} />
         <Route path="/startquiz/:code" element={<StartQuizCard />} />
         <Route path="/quizresult/:attemptId/answers" element={<ReviewPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPassword />} />
 
 
       </Routes>

@@ -5,6 +5,8 @@ import QuestionCard from "../components/quiz/QuestionCard";
 import QuestionPalette from "../components/quiz/QuestionPalette";
 import { FiGrid } from "react-icons/fi";
 import axiosInstance from "../api/axiosInstance";
+import toast from "react-hot-toast";
+
 
 function QuizPage() {
   const navigate = useNavigate();
@@ -154,21 +156,33 @@ function QuizPage() {
   // Handle quiz submission
   const handleSubmit = async (auto = false) => {
     if (submitted) return;
+
     setSubmitted(true);
     clearInterval(timerRef.current);
 
+    const liveAnswers = answersRef.current;
+
+    const formattedAnswers = Object.keys(liveAnswers).map((key) => ({
+      questionIndex: Number(key),
+      selectedOption: liveAnswers[key],
+    }));
+
+    const submitPromise = axiosInstance.post(`/quiz/${code}/submit`, {
+      attemptToken: token,
+      answers: formattedAnswers,
+    });
+
+    toast.promise(
+      submitPromise,
+      {
+        loading: auto ? "Time's up! Submitting..." : "Submitting quiz...",
+        success: "Quiz submitted successfully 🎉",
+        error: "Submission failed. Please try again.",
+      }
+    );
+
     try {
-      const liveAnswers = answersRef.current;
-
-      const formattedAnswers = Object.keys(liveAnswers).map((key) => ({
-        questionIndex: Number(key),
-        selectedOption: liveAnswers[key],
-      }));
-
-      const res = await axiosInstance.post(`/quiz/${code}/submit`, {
-        attemptToken: token,
-        answers: formattedAnswers,
-      });
+      const res = await submitPromise;
 
       // Clean up localStorage
       localStorage.removeItem(`quiz_end_${token}`);
@@ -177,25 +191,22 @@ function QuizPage() {
 
       navigate(`/quizresult/${res.data.attemptId}`);
     } catch (err) {
-      console.error("Submit failed", err.message);
-      console.log(err.response?.data);
+      console.error("Submit failed", err);
 
       if (err.response?.data?.message === "TIME_EXPIRED") {
         const attemptId = err.response.data.attemptId;
+
         if (attemptId) {
           localStorage.removeItem(`quiz_end_${token}`);
           localStorage.removeItem(storageAnswersKey);
           localStorage.removeItem(storageCurrentKey);
+
           navigate(`/quizresult/${attemptId}`);
-        } else {
-          alert("Time expired, but no attemptId received.");
-          navigate("/");
         }
-      } else {
-        alert("Failed to submit quiz");
       }
     }
   };
+
 
   const translateText = async (text, targetLang) => {
     if (targetLang === "en") return text;
@@ -313,11 +324,13 @@ function QuizPage() {
 
             {current === questions.length - 1 ? (
               <button
+                disabled={submitted}
                 onClick={() => handleSubmit(false)}
-                className="px-6 py-2 bg-gray-900 text-white rounded-lg w-1/2"
+                className="px-6 py-2 bg-gray-900 text-white rounded-lg w-1/2 disabled:opacity-50"
               >
-                Submit Quiz
+                {submitted ? "Submitting..." : "Submit Quiz"}
               </button>
+
             ) : (
               <button
                 onClick={() => handleSetCurrent(Math.min(current + 1, questions.length - 1))}

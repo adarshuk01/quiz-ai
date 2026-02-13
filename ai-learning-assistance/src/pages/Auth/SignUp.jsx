@@ -9,7 +9,8 @@ function SignUp() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
   });
@@ -19,8 +20,12 @@ function SignUp() {
   const validate = () => {
     const newErrors = {};
 
-    if (!form.name) {
-      newErrors.name = "Name is required";
+    if (!form.firstName) {
+      newErrors.firstName = "First name is required";
+    }
+
+    if (!form.lastName) {
+      newErrors.lastName = "Last name is required";
     }
 
     if (!form.email) {
@@ -89,14 +94,26 @@ function SignUp() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              error={errors.name}
-              placeholder="Enter your name"
-            />
+            {/* First + Last Name */}
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                name="firstName"
+                value={form.firstName}
+                onChange={handleChange}
+                error={errors.firstName}
+                placeholder="Enter first name"
+              />
+
+              <Input
+                label="Last Name"
+                name="lastName"
+                value={form.lastName}
+                onChange={handleChange}
+                error={errors.lastName}
+                placeholder="Enter last name"
+              />
+            </div>
 
             <Input
               label="Email Address"

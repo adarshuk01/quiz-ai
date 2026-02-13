@@ -1,32 +1,18 @@
 import React, { useState } from "react";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
-
+import { useAuth } from "../../context/AuthContext";
 
 function SecuritySettings() {
+  const { changePassword, loading } = useAuth();
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const sessions = [
-    {
-      device: 'MacBook Pro 16"',
-      details: "San Francisco, CA • Chrome • Active now",
-      current: true,
-    },
-    {
-      device: "iPhone 14 Pro",
-      details: "San Francisco, CA • iOS App • 2 hours ago",
-      current: false,
-    },
-    {
-      device: "Windows PC",
-      details: "Austin, TX • Firefox • 3 days ago",
-      current: false,
-    },
-  ];
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,15 +22,34 @@ function SecuritySettings() {
     }));
   };
 
-  const handlePasswordUpdate = (e) => {
+  const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    console.log("Updated Password:", passwordData);
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage("Passwords do not match");
+      return;
+    }
+
+    const res = await changePassword({
+      currentPassword: passwordData.currentPassword,
+      newPassword: passwordData.newPassword,
+    });
+
+    if (res.success) {
+      setMessage("Password updated successfully");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } else {
+      setMessage(res.message);
+    }
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-
-      {/* ================= Change Password ================= */}
+      {/* Change Password */}
       <div className="bg-white p-6 rounded-xl shadow-sm">
         <h2 className="text-lg font-semibold">Change Password</h2>
         <p className="text-sm text-gray-500 mb-6">
@@ -76,13 +81,16 @@ function SecuritySettings() {
             onChange={handleChange}
           />
 
+
           <div className="pt-2">
-            <Button type="submit">Update Password</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Updating..." : "Update Password"}
+            </Button>
           </div>
         </form>
       </div>
 
-      {/* ================= Two Factor ================= */}
+      {/* Two Factor */}
       <div className="bg-white p-6 rounded-xl shadow-sm flex justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
@@ -94,36 +102,6 @@ function SecuritySettings() {
 
         <Button>Enable 2FA</Button>
       </div>
-
-      {/* ================= Active Sessions ================= */}
-      {/* <div className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-lg font-semibold">Active Sessions</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Manage devices where you're currently logged in.
-        </p>
-
-        <div className="space-y-4">
-          {sessions.map((session, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center border-b pb-4 last:border-none"
-            >
-              <div>
-                <p className="font-medium">{session.device}</p>
-                <p className="text-sm text-gray-500">{session.details}</p>
-              </div>
-
-              {session.current ? (
-                <span className="bg-green-100 text-green-600 text-xs px-3 py-1 rounded-full">
-                  Current Device
-                </span>
-              ) : (
-                <Button text="Revoke" />
-              )}
-            </div>
-          ))}
-        </div>
-      </div> */}
     </div>
   );
 }
