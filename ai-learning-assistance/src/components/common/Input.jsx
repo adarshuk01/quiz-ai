@@ -27,8 +27,8 @@ function Input({
         {icon && <span className="text-gray-400 mr-2">{icon}</span>}
 
         <input
-        type={type}
-          className={`w-full outline-none text-sm bg-transparent ${inputClassName}`}
+          type={type}
+          className={`w-full outline-none text-base bg-transparent ${inputClassName}`}
           {...props}
         />
       </div>
