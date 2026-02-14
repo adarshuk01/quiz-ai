@@ -3,7 +3,7 @@ const upload = require("../middlewares/uploadMiddleware");
 const { processPDF, getMyQuestionSets, getQuestionSetById, generateFromTopic, updateQuestionSet, deleteQuestionSet, generateManualFromTopic } = require("../controllers/questionsController");
 const { protect } = require("../middlewares/authMiddleware");
 
-router.post("/upload",protect, upload.single("pdf"), processPDF);
+router.post("/upload",protect, upload.single("file"), processPDF);
 router.get("/my-questions", protect,getMyQuestionSets);
 router.get("/:id", protect,getQuestionSetById);
 router.post("/generate", protect, generateFromTopic);

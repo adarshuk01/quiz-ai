@@ -26,22 +26,23 @@ function UploadPdf() {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!form.file) {
-      alert("Please upload a file");
-      return;
-    }
+  if (!form.file) {
+    alert("Please upload a file");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("pdf", form.file);
-    formData.append("topic", form.topic);
-    formData.append("questions", form.questions);
-    formData.append("difficulty", form.difficulty);
+  const formData = new FormData();
+  formData.append("file", form.file); // ✅ FIXED
+  formData.append("topic", form.topic);
+  formData.append("questions", form.questions);
+  formData.append("difficulty", form.difficulty);
 
-    await generateQuestionsFromPdf(formData);
-  };
+  await generateQuestionsFromPdf(formData);
+};
+
 
   return (
     <>
@@ -94,7 +95,7 @@ function UploadPdf() {
             <input
               type="file"
               name="file"
-              accept=".pdf,.docx,.txt"
+               accept=".pdf,.png,.jpg,.jpeg"
               className="hidden"
               onChange={handleChange}
             />

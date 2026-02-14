@@ -6,6 +6,7 @@ const {
   generateTopicFromText,
 } = require("../services/aiService");
 const ai = require("../config/ai"); // your AI config
+const { extractTextFromFile } = require("../services/fileTextService");
 
 
 exports.generateFromTopic = async (req, res) => {
@@ -233,20 +234,20 @@ exports.updateQuestionSet = async (req, res) => {
 exports.processPDF = async (req, res) => {
   try {
     if (!req.file || !req.file.buffer) {
-      return res.status(400).json({ message: "PDF_REQUIRED" });
+      return res.status(400).json({ message: "FILE_REQUIRED" });
     }
 
-    // 🔹 1. Extract text
+    // 🔹 Extract text (PDF + Image supported)
     let text;
     try {
-      text = await extractTextFromPDFBuffer(req.file.buffer);
+      text = await extractTextFromFile(req.file);
     } catch {
       return res.status(400).json({
-        message: "PDF_HAS_NO_READABLE_TEXT",
+        message: "FILE_HAS_NO_READABLE_TEXT",
       });
     }
 
-    // 🔹 2. Generate topic (once)
+    // 🔹 Generate topic
     let topic = "General";
     try {
       topic = await generateTopicFromText(text);
@@ -254,7 +255,7 @@ exports.processPDF = async (req, res) => {
       console.warn("Topic generation failed, using default");
     }
 
-    // 🔹 3. Chunk text
+    // 🔹 Chunk text
     const chunks = chunkText(text, 15000);
     let allQuestions = [];
 
@@ -279,22 +280,12 @@ exports.processPDF = async (req, res) => {
       }
     }
 
-    // 🔹 4. Deduplicate
-    const seen = new Set();
-    allQuestions = allQuestions.filter(q => {
-      const key = q.question.replace(/\s+/g, " ").trim().toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
     if (allQuestions.length === 0) {
       return res.status(400).json({
         message: "NO_VALID_QUESTIONS_GENERATED",
       });
     }
 
-    // 🔹 5. Save
     const saved = await QuestionSet.create({
       sourceFile: req.file.originalname,
       topic,
@@ -303,8 +294,9 @@ exports.processPDF = async (req, res) => {
     });
 
     res.status(201).json(saved);
+
   } catch (err) {
-    console.error("PROCESS PDF ERROR:", err);
+    console.error("PROCESS FILE ERROR:", err);
     res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
   }
 };

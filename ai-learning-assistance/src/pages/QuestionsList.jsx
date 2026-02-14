@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuestionSets } from "../context/QuestionSetContext";
 import EditableQuestionCard from "../components/QuestionSets/EditableQuestionCard";
 import Button from "../components/common/Button";
-import { FaWandMagicSparkles } from "react-icons/fa6";
 import { FaSave } from "react-icons/fa";
 import axiosInstance from "../api/axiosInstance";
 import ConfirmDialog from "../components/common/ConfirmDialog";
@@ -19,8 +18,8 @@ function QuestionSetDetails() {
   const [saving, setSaving] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
-  // scroll container ref
-  const scrollContainerRef = useRef(null);
+  // 🔥 ref for scrolling to last question
+  const lastQuestionRef = useRef(null);
 
   useEffect(() => {
     getQuestionSetById(id);
@@ -31,6 +30,16 @@ function QuestionSetDetails() {
       setQuestions(currentQuestionSet.questions || []);
     }
   }, [currentQuestionSet]);
+
+  // 🔥 Auto scroll when new question added
+  useEffect(() => {
+    if (lastQuestionRef.current) {
+      lastQuestionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [questions.length]);
 
   const handleQuestionChange = (index, updatedQuestion) => {
     const newQuestions = [...questions];
@@ -43,7 +52,6 @@ function QuestionSetDetails() {
     setQuestions(newQuestions);
   };
 
-  // Add new question with auto-scroll
   const handleAddQuestion = () => {
     const newQuestion = {
       question: "",
@@ -51,24 +59,9 @@ function QuestionSetDetails() {
       correctAnswer: 0,
     };
 
-    setQuestions((prev) => {
-      const updated = [...prev, newQuestion];
-
-      // wait for DOM render, then scroll
-      setTimeout(() => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollTo({
-            top: scrollContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          });
-        }
-      }, 100);
-
-      return updated;
-    });
+    setQuestions((prev) => [...prev, newQuestion]);
   };
 
-  // actual save logic
   const confirmSave = async () => {
     try {
       setSaving(true);
@@ -91,9 +84,9 @@ function QuestionSetDetails() {
   if (!currentQuestionSet) return <p className="p-6">No data</p>;
 
   return (
-  <div className="mx-auto lg:h-[calc(95vh-50px)] h-[90vh]  flex flex-col">
-    {/* Sticky Header */}
-    <div className="sticky top-0 z-10 bg-white shadow-sm p-4 rounded-lg">
+  <div className="flex flex-col">
+    {/* Page Header */}
+    <div className="bg-white shadow-sm p-4 rounded-md">
       <div className="flex justify-between items-center flex-wrap gap-2">
         <div>
           <h2 className="lg:text-2xl text-lg font-semibold capitalize text-gray-800">
@@ -104,42 +97,41 @@ function QuestionSetDetails() {
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="primary"
-            icon={<FaSave />}
-            onClick={() => setShowSaveConfirm(true)}
-          >
-            Save Changes
-          </Button>
-
-       
-        </div>
+        <Button
+          variant="primary"
+          icon={<FaSave />}
+          onClick={() => setShowSaveConfirm(true)}
+        >
+          Save Changes
+        </Button>
       </div>
     </div>
 
-    {/* Scrollable questions area */}
-    <div
-      ref={scrollContainerRef}
-      className="flex-1 overflow-y-auto space-y-4 p-2"
-    >
+    {/* Questions */}
+    <div className="space-y-4 mt-4">
       {questions.map((q, index) => (
-        <EditableQuestionCard
+        <div
           key={q._id || index}
-          index={index}
-          question={q}
-          onChange={handleQuestionChange}
-          onDelete={handleDelete}
-        />
+          ref={index === questions.length - 1 ? lastQuestionRef : null}
+        >
+          <EditableQuestionCard
+            index={index}
+            question={q}
+            onChange={handleQuestionChange}
+            onDelete={handleDelete}
+          />
+        </div>
       ))}
     </div>
 
-    {/* Add Question button */}
-    <div className="flex justify-end p-3 shadow-sm bg-white">
-      <Button onClick={handleAddQuestion}>+ Add Question</Button>
+    {/* Add Button */}
+    <div className="mt-6 flex justify-end">
+      <Button onClick={handleAddQuestion}>
+        + Add Question
+      </Button>
     </div>
 
-    {/* Save Confirmation Dialog */}
+    {/* Confirm Dialog */}
     <ConfirmDialog
       isOpen={showSaveConfirm}
       loading={saving}

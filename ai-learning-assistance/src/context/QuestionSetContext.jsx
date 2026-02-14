@@ -83,6 +83,7 @@ export const QuestionSetProvider = ({ children }) => {
       setError(
         err.response?.data?.message || "Failed to generate questions"
       );
+      console.error("Upload error:", err.response?.data);
       throw err;
     } finally {
       setLoading(false);
