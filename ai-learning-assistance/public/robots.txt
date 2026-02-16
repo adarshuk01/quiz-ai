@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://quiz-ai-bo6d.vercel.app/sitemap.xml
