@@ -22,6 +22,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { Toaster } from 'react-hot-toast'
 import ForgotPassword from './pages/Auth/ForgotPassword'
 import ResetPassword from './pages/Auth/ResetPassword'
+import Home from './pages/Home'
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
          <Route element={<ProtectedRoute />}>
-          <Route path='/' element={<Dashboard />} />
+          <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/question-sets' element={<QuestionSets />} />
           <Route path='/question-sets/:id' element={<QuestionSetDetails />} />
 
@@ -58,6 +59,7 @@ function App() {
         <Route path="/quizresult/:attemptId/answers" element={<ReviewPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 <Route path="/reset-password/:token" element={<ResetPassword />} />
+<Route path='/' element={<Home/>}/>
 
 
       </Routes>

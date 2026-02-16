@@ -16,7 +16,7 @@ import { CgProfile } from "react-icons/cg";
 
 function Sidebar() {
   const menu = [
-    { name: "Dashboard", icon: <FiGrid />, path: "/" },
+    { name: "Dashboard", icon: <FiGrid />, path: "/dashboard" },
     { name: "Question Sets", icon: <LuFileQuestion />, path: "/question-sets" },
     { name: "My Quizzes", icon: <FiBookOpen />, path: "/quizzes" },
     { name: "Students", icon: <FiUsers />, path: "/students" },
