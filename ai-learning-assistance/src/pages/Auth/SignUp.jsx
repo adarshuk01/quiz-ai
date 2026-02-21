@@ -68,7 +68,7 @@ function SignUp() {
     const res = await signup(form);
 
     if (res.success) {
-      navigate("/");
+      navigate("/dashboard");
     } else {
       setErrors({ api: res.message });
     }

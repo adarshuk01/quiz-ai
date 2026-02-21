@@ -59,7 +59,7 @@ const handleSubmit = async (e) => {
     const res = await login(form);
 
     if (res?.success) {
-      navigate("/");
+      navigate("/dashboard");
     } else {
       setErrors({ api: res?.message || "Invalid credentials" });
     }
