@@ -1,12 +1,15 @@
-const Tesseract = require("tesseract.js");
-const fs = require("fs");
+const { createWorker } = require("tesseract.js");
 
-exports.extractTextWithOCR = async (filePath) => {
+exports.extractTextFromImage = async (imagePath) => {
+  const worker = await createWorker("eng");
+
   const {
     data: { text },
-  } = await Tesseract.recognize(filePath, "mal", {
-    logger: m => console.log(m),
-  });
+  } = await worker.recognize(imagePath);
+
+  
+
+  await worker.terminate();
 
   return text;
 };

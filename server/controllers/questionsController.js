@@ -7,6 +7,9 @@ const {
 } = require("../services/aiService");
 const ai = require("../config/ai"); // your AI config
 const { extractTextFromFile } = require("../services/fileTextService");
+const { extractTextFromImage } = require("../services/ocrService");
+const { parseQuestionsWithAI } = require("../services/aiParserService");
+const { extractQuestionsFromImage } = require("../services/visionService");
 
 
 exports.generateFromTopic = async (req, res) => {
@@ -340,6 +343,20 @@ exports.getQuestionSetById = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
+  }
+};
+
+
+exports.extractQuestions = async (req, res) => {
+  try {
+    const imagePath = req.file.path;
+
+    const questions = await extractQuestionsFromImage(imagePath);
+
+    res.json({ success: true, questions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Vision extraction failed" });
   }
 };
 
