@@ -8,7 +8,16 @@ const { errorHandler } = require("./middlewares/errorMiddleware");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://quiz-ai-bo6d.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+app.options("*", cors());
 app.use(express.json());
 
 app.use("/api/questionsets", pdfRoutes);
