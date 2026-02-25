@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- Public Pages -->
   <url>
     <loc>https://quiz-ai-bo6d.vercel.app/</loc>
-  </url>
-  <url>
-    <loc>https://quiz-ai-bo6d.vercel.app/signup</loc>
-  </url>
-  <url>
-    <loc>https://quiz-ai-bo6d.vercel.app/login</loc>
-  </url>
-  <url>
-    <loc>https://quiz-ai-bo6d.vercel.app/forgot-password</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
 
-  <!-- Dynamic Quiz Routes (Structure Only) -->
   <url>
-    <loc>https://quiz-ai-bo6d.vercel.app/startquiz/QUIZ_CODE</loc>
+    <loc>https://quiz-ai-bo6d.vercel.app/signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
+
   <url>
-    <loc>https://quiz-ai-bo6d.vercel.app/quiz/QUIZ_CODE/attempt/TOKEN</loc>
+    <loc>https://quiz-ai-bo6d.vercel.app/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://quiz-ai-bo6d.vercel.app/forgot-password</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>
