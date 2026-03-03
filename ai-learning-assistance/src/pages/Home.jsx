@@ -8,10 +8,13 @@ function Home() {
       {/* Hero Section */}
       <section className="bg-white py-20 px-6 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-6">
-          AI Quiz Generator for Smarter Learning
+          Free AI Quiz Generator – Create MCQs from PDF & Text Instantly
         </h1>
-        <p className="text-lg max-w-2xl mx-auto mb-8">
-          Upload PDFs, generate AI-powered quizzes instantly, and test your knowledge with an intelligent learning assistant.
+
+        <p className="text-lg max-w-3xl mx-auto mb-8">
+          Our AI Quiz Generator helps teachers and students create smart multiple-choice
+          quizzes instantly. Upload PDFs, paste text, or generate questions automatically
+          using advanced AI technology. Perfect for exams, mock tests, and smart learning.
         </p>
 
         <div className="flex justify-center gap-4">
@@ -19,7 +22,7 @@ function Home() {
             to="/signup"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           >
-            Get Started
+            Get Started Free
           </Link>
           <Link
             to="/login"
@@ -33,62 +36,106 @@ function Home() {
       {/* Features Section */}
       <section className="py-16 px-6 max-w-6xl mx-auto">
         <h2 className="text-3xl font-semibold text-center mb-12">
-          Key Features
+          Powerful AI Quiz Maker Features
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-xl font-semibold mb-3">
-              AI-Powered Quiz Generation
+              AI Quiz Generator from PDF
             </h3>
             <p>
-              Instantly create quizzes from text or PDFs using advanced AI technology.
+              Upload any PDF document and automatically generate accurate MCQ
+              questions within seconds.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-xl font-semibold mb-3">
-              Smart Question Analysis
+              Generate MCQs from Text
             </h3>
             <p>
-              Get accurate and well-structured questions with intelligent difficulty levels.
+              Paste notes, study materials, or articles and let AI convert them
+              into structured quizzes.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-xl font-semibold mb-3">
-              Instant Results & Review
+              Instant Results & Analytics
             </h3>
             <p>
-              View scores instantly and review answers to improve learning outcomes.
+              Attempt quizzes online and track scores instantly to improve
+              performance.
             </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* SEO Content Section */}
       <section className="bg-white py-16 px-6">
-        <h2 className="text-3xl font-semibold text-center mb-12">
-          How It Works
-        </h2>
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-semibold mb-6 text-center">
+            What is an AI Quiz Generator?
+          </h2>
 
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
-          <div>
-            <div className="text-3xl font-bold text-blue-600 mb-3">1</div>
-            <h3 className="font-semibold mb-2">Upload Content</h3>
-            <p>Upload a PDF or enter text to generate quiz questions.</p>
-          </div>
+          <p className="mb-4">
+            An AI Quiz Generator is an intelligent tool that automatically creates
+            quiz questions from PDFs, documents, or text content. Using advanced
+            artificial intelligence, it analyzes the material and generates
+            multiple-choice questions (MCQs) with accurate answer options.
+          </p>
 
-          <div>
-            <div className="text-3xl font-bold text-blue-600 mb-3">2</div>
-            <h3 className="font-semibold mb-2">Generate Quiz</h3>
-            <p>AI creates questions automatically with smart logic.</p>
-          </div>
+          <p className="mb-4">
+            This tool is ideal for teachers preparing test papers, students
+            revising for exams, and online educators building practice quizzes.
+            Instead of manually creating questions, AI handles the heavy work
+            instantly.
+          </p>
 
-          <div>
-            <div className="text-3xl font-bold text-blue-600 mb-3">3</div>
-            <h3 className="font-semibold mb-2">Take & Review</h3>
-            <p>Attempt the quiz and get instant results with explanations.</p>
+          <p>
+            Whether you need a free quiz maker, AI MCQ generator, or a smart test
+            creator, this AI-powered solution saves time and improves learning efficiency.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ Section (SEO BOOSTER) */}
+      <section className="py-16 px-6 bg-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-semibold text-center mb-12">
+            Frequently Asked Questions
+          </h2>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold mb-2">
+                Is this AI Quiz Generator free?
+              </h3>
+              <p>
+                Yes, you can generate quizzes for free without complicated setup.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">
+                Can I generate quizzes from PDF files?
+              </h3>
+              <p>
+                Yes. Simply upload your PDF, and the AI will automatically create
+                MCQ questions from the content.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">
+                Can I attempt quizzes online?
+              </h3>
+              <p>
+                Absolutely. You can take quizzes instantly and view results with
+                detailed feedback.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -96,10 +143,10 @@ function Home() {
       {/* CTA Section */}
       <section className="py-16 px-6 text-center bg-blue-600 text-white">
         <h2 className="text-3xl font-bold mb-4">
-          Start Learning Smarter Today
+          Create Your First AI-Generated Quiz Today
         </h2>
         <p className="mb-6">
-          Create your first AI-generated quiz in seconds.
+          Generate quizzes from PDF and text in seconds using smart AI.
         </p>
 
         <Link
@@ -110,9 +157,8 @@ function Home() {
         </Link>
       </section>
 
-      {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 text-center py-6">
-        <p>© 2026 AI Learning Assistant. All rights reserved.</p>
+        <p>© 2026 AI Quiz Generator. All rights reserved.</p>
       </footer>
     </div>
   );

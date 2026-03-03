@@ -78,6 +78,7 @@ export const QuestionSetProvider = ({ children }) => {
       );
 
       setGeneratedQuestions(res.data.questions || []);
+      navigate(`/question-sets/${res.data._id}`)
       return res.data;
     } catch (err) {
       setError(

@@ -10,6 +10,8 @@ const { extractTextFromFile } = require("../services/fileTextService");
 const { extractTextFromImage } = require("../services/ocrService");
 const { parseQuestionsWithAI } = require("../services/aiParserService");
 const { extractQuestionsFromImage } = require("../services/visionService");
+const { uploadAndParseFile, getParseResult } = require("../services/llamaParserService");
+const fs = require("fs");
 
 
 exports.generateFromTopic = async (req, res) => {
@@ -235,16 +237,34 @@ exports.updateQuestionSet = async (req, res) => {
 
 
 exports.processPDF = async (req, res) => {
+  const questionCount = parseInt(req.body.questions) || 10;
+
   try {
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: "FILE_REQUIRED" });
     }
 
-    // 🔹 Extract text (PDF + Image supported)
     let text;
+
     try {
-      text = await extractTextFromFile(req.file);
-    } catch {
+      const jobId = await uploadAndParseFile(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
+
+      const result = await getParseResult(jobId);
+
+      text = result.pages
+        .map((page) => page.md || page.text || "")
+        .join("\n");
+
+    } catch (err) {
+      console.error("LLAMA ERROR:", err.response?.data || err.message);
+      return res.status(500).json({ message: "FILE_PROCESSING_FAILED" });
+    }
+
+    if (!text || text.trim().length === 0) {
       return res.status(400).json({
         message: "FILE_HAS_NO_READABLE_TEXT",
       });
@@ -254,55 +274,70 @@ exports.processPDF = async (req, res) => {
     let topic = "General";
     try {
       topic = await generateTopicFromText(text);
-    } catch {
-      console.warn("Topic generation failed, using default");
+    } catch (err) {
+      console.warn("Topic generation failed:", err.message);
     }
 
-    // 🔹 Chunk text
-    const chunks = chunkText(text, 15000);
-    let allQuestions = [];
+    // 🔹 Smaller chunks (important!)
+    const chunks = chunkText(text, 6000);
 
-    for (const chunk of chunks) {
-      try {
-        let questions = await generateQuizQuestions(chunk);
+let allQuestions = [];
 
-        questions = questions.filter(q =>
-          q &&
-          typeof q.question === "string" &&
-          Array.isArray(q.options) &&
-          q.options.length === 4 &&
-          q.options.every(opt => typeof opt === "string") &&
-          Number.isInteger(q.correctAnswer) &&
-          q.correctAnswer >= 0 &&
-          q.correctAnswer <= 3
-        );
+for (const chunk of chunks) {
+  if (allQuestions.length >= questionCount) break;
 
-        allQuestions.push(...questions);
-      } catch {
-        console.warn("AI failed for one chunk, skipping");
-      }
-    }
+  try {
+    const remaining = questionCount - allQuestions.length;
 
-    if (allQuestions.length === 0) {
-      return res.status(400).json({
-        message: "NO_VALID_QUESTIONS_GENERATED",
-      });
-    }
+    // 🔹 Single call per chunk
+    let batch = await generateQuizQuestions(chunk, remaining);
+
+    // 🔹 Validate
+    batch = batch.filter(
+      (q) =>
+        q &&
+        typeof q.question === "string" &&
+        Array.isArray(q.options) &&
+        q.options.length === 4 &&
+        q.options.every((opt) => typeof opt === "string") &&
+        Number.isInteger(q.correctAnswer) &&
+        q.correctAnswer >= 0 &&
+        q.correctAnswer <= 3
+    );
+
+    // 🔹 Deduplicate by question text
+    const existingSet = new Set(allQuestions.map(q => q.question.trim()));
+
+    batch = batch.filter(q => !existingSet.has(q.question.trim()));
+
+    allQuestions.push(...batch);
+
+  } catch (err) {
+    console.warn("AI failed for one chunk:", err.message);
+  }
+}
+
+// Trim final result
+allQuestions = allQuestions.slice(0, questionCount);
 
     const saved = await QuestionSet.create({
       sourceFile: req.file.originalname,
       topic,
       questions: allQuestions,
-      createdBy: req.user.id
+      createdBy: req.user.id,
     });
 
-    res.status(201).json(saved);
+    return res.status(201).json(saved);
 
   } catch (err) {
-    console.error("PROCESS FILE ERROR:", err);
-    res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
+    console.error("PROCESS FILE ERROR:", err.response?.data || err.message);
+
+    return res.status(500).json({
+      message: "INTERNAL_SERVER_ERROR",
+    });
   }
 };
+
 
 exports.getMyQuestionSets = async (req, res) => {
   try {

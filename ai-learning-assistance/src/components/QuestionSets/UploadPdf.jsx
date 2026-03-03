@@ -40,6 +40,9 @@ function UploadPdf() {
   formData.append("questions", form.questions);
   formData.append("difficulty", form.difficulty);
 
+  console.log(formData);
+  
+
   await generateQuestionsFromPdf(formData);
 };
 
