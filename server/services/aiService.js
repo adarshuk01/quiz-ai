@@ -21,30 +21,43 @@ exports.generateQuizQuestions = async (text, questions) => {
     response_format: { type: "json_object" },
     messages: [
       {
-        role: "system",
-        content: `
+  role: "system",
+  content: `
 You are an expert exam assistant.
 
+CRITICAL RULE:
+If extracting existing MCQs:
+- Identify the correct option EXACTLY from the original question.
+- Convert A → 0
+- Convert B → 1
+- Convert C → 2
+- Convert D → 3
+- The index MUST match the position in the options array.
+
+You MUST double-check that:
+options[correctAnswer] is truly the correct answer.
+
 CASE 1:
-If the text already contains multiple choice questions,
-→ Extract them EXACTLY as written.
-→ Do NOT modify wording.
-→ Preserve original options.
+If the text already contains MCQs:
+- Extract question exactly as written.
+- Preserve options wording exactly.
+- Map the correct answer letter to correct index.
+- Verify the index matches the option.
 
 CASE 2:
-If the text is a summary, paragraph, or study material,
-→ Convert the content into high-quality multiple choice questions.
-→ Questions must test understanding, not trivial facts.
+If the text is study material:
+- Create conceptual MCQs.
+- Only one correct answer.
+- Make distractors realistic but incorrect.
 
-General Rules:
-- Return ONLY valid JSON array.
-- Each question must have exactly 4 options.
-- Only one option must be correct.
-- correctAnswer must be index (0,1,2,3).
-- Do NOT repeat questions.
-- Do NOT include explanations.
-        `,
-      },
+GENERAL RULES:
+- Return ONLY a valid JSON array.
+- Exactly 4 options.
+- correctAnswer must be 0,1,2,3.
+- Double-check correctness before returning.
+- No explanations.
+`
+},
       {
         role: "user",
         content: `

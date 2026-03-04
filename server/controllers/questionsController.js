@@ -281,6 +281,9 @@ exports.processPDF = async (req, res) => {
     // 🔹 Smaller chunks (important!)
     const chunks = chunkText(text, 6000);
 
+    console.log(chunks);
+    
+
 let allQuestions = [];
 
 for (const chunk of chunks) {
