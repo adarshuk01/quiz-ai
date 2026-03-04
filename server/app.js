@@ -3,6 +3,8 @@ const cors = require("cors");
 const pdfRoutes = require("./routes/questionRoutes");
 const authRoutes = require("./routes/authRoutes");
 const quizRoutes = require("./routes/quizRoutes");
+const dashboardRoutes = require("./routes/dashBoardRoutes");
+
 
 const { errorHandler } = require("./middlewares/errorMiddleware");
 
@@ -14,6 +16,8 @@ app.use(express.json());
 app.use("/api/questionsets", pdfRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
 
 
 

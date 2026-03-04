@@ -12,39 +12,45 @@ function extractJSONArray(text) {
 }
 
 
-exports.generateQuizQuestions = async (text,questions) => {
-  console.log('questions',questions);
-  
+exports.generateQuizQuestions = async (text, questions) => {
+  console.log("questions", questions);
+
   const response = await openai.chat.completions.create({
     model: "openai/gpt-oss-120b",
-    temperature: 0.3, // 👈 lower = more consistent MCQs
-    response_format: { type: "json_object" }, // 👈 ADD THIS
+    temperature: 0.3,
+    response_format: { type: "json_object" },
     messages: [
       {
         role: "system",
-        content:
-          `You are an expert quiz generator. You always return valid JSON. 
-          You are a strict exam paper parser.
+        content: `
+You are an expert exam assistant.
 
-You DO NOT create or modify questions.
-You ONLY extract existing multiple choice questions exactly as written.
-You must preserve original wording and options exactly.
-Return structured JSON only.
-          `,
+CASE 1:
+If the text already contains multiple choice questions,
+→ Extract them EXACTLY as written.
+→ Do NOT modify wording.
+→ Preserve original options.
+
+CASE 2:
+If the text is a summary, paragraph, or study material,
+→ Convert the content into high-quality multiple choice questions.
+→ Questions must test understanding, not trivial facts.
+
+General Rules:
+- Return ONLY valid JSON array.
+- Each question must have exactly 4 options.
+- Only one option must be correct.
+- correctAnswer must be index (0,1,2,3).
+- Do NOT repeat questions.
+- Do NOT include explanations.
+        `,
       },
       {
         role: "user",
         content: `
-Generate ${questions} multiple choice quiz questions from the text below.
+Generate ${questions} multiple choice questions from the text below.
 
-Rules:
-- Each question must have exactly 4 options 
-- Only one option must be correct
-- correctAnswer must be the index (0,1,2,3)
-- Do NOT repeat questions
-- Return ONLY valid JSON array
-
-Format:
+Required Format:
 [
   {
     "question": "string",
@@ -60,8 +66,7 @@ ${text}
     ],
   });
 
- const raw = response.choices[0].message.content.trim();
-
+  const raw = response.choices[0].message.content.trim();
   return extractJSONArray(raw);
 };
 

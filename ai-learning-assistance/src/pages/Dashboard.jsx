@@ -2,6 +2,7 @@ import React from "react";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { FiUploadCloud } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import StatsCards from "../components/dashboard/StatsCards";
 
 function Dashboard() {
   return (
@@ -37,6 +38,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
+      <StatsCards/>
     </div>
   );
 }
