@@ -323,14 +323,23 @@ for (const chunk of chunks) {
 // Trim final result
 allQuestions = allQuestions.slice(0, questionCount);
 
-    const saved = await QuestionSet.create({
-      sourceFile: req.file.originalname,
-      topic,
-      questions: allQuestions,
-      createdBy: req.user.id,
-    });
+// 🚨 Ensure required number of questions
+if (allQuestions.length < questionCount) {
+  return res.status(500).json({
+    message: "QUESTION_GENERATION_FAILED",
+    generated: allQuestions.length,
+    required: questionCount
+  });
+}
 
-    return res.status(201).json(saved);
+const saved = await QuestionSet.create({
+  sourceFile: req.file.originalname,
+  topic,
+  questions: allQuestions,
+  createdBy: req.user.id,
+});
+
+return res.status(201).json(saved);
 
   } catch (err) {
     console.error("PROCESS FILE ERROR:", err.response?.data || err.message);
