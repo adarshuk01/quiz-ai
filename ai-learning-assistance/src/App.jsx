@@ -23,6 +23,7 @@ import { Toaster } from 'react-hot-toast'
 import ForgotPassword from './pages/Auth/ForgotPassword'
 import ResetPassword from './pages/Auth/ResetPassword'
 import Home from './pages/Home'
+import Explore from './pages/Explore'
 
 function App() {
   return (
@@ -44,6 +45,9 @@ function App() {
           <Route path='/quizdetails/:quizId' element={<QuizDetails />} />
           <Route path='/profile' element={<MyProfile />} />
           <Route path='/security' element={<SecuritySettings />} />
+
+          <Route path='/explore' element={<Explore />} />
+
 
 
 

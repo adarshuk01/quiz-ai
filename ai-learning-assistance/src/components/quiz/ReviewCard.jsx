@@ -20,8 +20,10 @@ function ReviewCard({
 
       {/* Question */}
       <h2 className="text-lg font-semibold text-gray-800 mb-6">
-        {question}
-      </h2>
+  {question.split("\n").map((line, index) => (
+    <div key={index}>{line}</div>
+  ))}
+</h2>
 
       {/* Options */}
       <div className="space-y-3">

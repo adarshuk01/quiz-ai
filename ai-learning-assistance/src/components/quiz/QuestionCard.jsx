@@ -9,6 +9,8 @@ function QuestionCard({
   total,
 }) {
   const progress = (current / total) * 100;
+  console.log(question);
+  
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
@@ -29,10 +31,11 @@ function QuestionCard({
       </div>
 
       {/* Question */}
-      <h2 className="text-lg font-semibold text-gray-800 mb-6">
-        {question}
-      </h2>
-
+    <h2 className="text-lg font-semibold text-gray-800 mb-6">
+  {question.split("\n").map((line, index) => (
+    <div key={index}>{line}</div>
+  ))}
+</h2>
       {/* Options */}
       <div className="space-y-3">
         {options.map((opt, i) => (

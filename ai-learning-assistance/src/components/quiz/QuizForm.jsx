@@ -21,6 +21,7 @@ function QuizBasicInfo() {
     questionSet: "",
     duration: 30,
     pauseAt: "", // NEW FIELD
+    isPublic: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -31,12 +32,12 @@ function QuizBasicInfo() {
 
 
   const toLocalDateTimeInput = (dateString) => {
-  if (!dateString) return "";
-  const d = new Date(dateString);
-  const offset = d.getTimezoneOffset();
-  d.setMinutes(d.getMinutes() - offset);
-  return d.toISOString().slice(0, 16);
-};
+    if (!dateString) return "";
+    const d = new Date(dateString);
+    const offset = d.getTimezoneOffset();
+    d.setMinutes(d.getMinutes() - offset);
+    return d.toISOString().slice(0, 16);
+  };
 
 
   // Load quiz in edit mode
@@ -53,6 +54,7 @@ function QuizBasicInfo() {
           questionSet: quiz.questionSet?._id || "",
           duration: quiz.duration || 30,
           pauseAt: toLocalDateTimeInput(quiz.autoPauseAt),
+          isPublic: quiz.isPublic || false,
         });
       } catch (err) {
         console.error("LOAD QUIZ ERROR:", err);
@@ -85,8 +87,13 @@ function QuizBasicInfo() {
   );
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -118,6 +125,7 @@ function QuizBasicInfo() {
       questionSetId: form.questionSet,
       duration: form.duration,
       autoPauseAt: form.pauseAt || null, // NEW
+      isPublic: form.isPublic,
     };
 
     try {
@@ -206,6 +214,19 @@ function QuizBasicInfo() {
             value={form.pauseAt}
             onChange={handleChange}
           />
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="isPublic"
+              checked={form.isPublic}
+              onChange={handleChange}
+              className="h-4 w-4"
+            />
+
+            <label className="text-sm text-gray-700">
+              Make this quiz public (anyone can attend)
+            </label>
+          </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <Button

@@ -6,7 +6,7 @@ require("dotenv").config();
 
 
 exports.createQuiz = async (req, res) => {
-  const { title, questionSetId, duration, autoPauseAt } = req.body;
+  const { title, questionSetId, duration, autoPauseAt,isPublic } = req.body;
 
   const accessCode = crypto.randomBytes(4).toString("hex");
 
@@ -17,6 +17,7 @@ exports.createQuiz = async (req, res) => {
     accessCode,
     createdBy: req.user._id,
     autoPauseAt: autoPauseAt || null,
+    isPublic
   });
 
   const link = `${process.env.FRONTEND_URL}/quiz/${accessCode}`;
@@ -96,7 +97,7 @@ exports.getQuizById = async (req, res) => {
 
 exports.updateQuiz = async (req, res) => {
   try {
-    const { title, questionSetId, duration,autoPauseAt  } = req.body;
+    const { title, questionSetId, duration,autoPauseAt ,isPublic } = req.body;
 
     const quiz = await Quiz.findOne({
       _id: req.params.id,
@@ -111,6 +112,7 @@ exports.updateQuiz = async (req, res) => {
     if (questionSetId !== undefined) quiz.questionSet = questionSetId;
     if (duration !== undefined) quiz.duration = duration;
         if (autoPauseAt !== undefined) quiz.autoPauseAt = autoPauseAt;
+        if (isPublic !== undefined) quiz.isPublic = isPublic;
 
 
     await quiz.save();
@@ -392,7 +394,6 @@ exports.submitQuiz = async (req, res) => {
 
 
 // GET /api/quiz/analytics/:quizId
-// GET /api/quiz/analytics/:quizId
 exports.getQuizAnalytics = async (req, res) => {
   try {
     const { quizId } = req.params;
@@ -566,6 +567,95 @@ exports.getAttemptReview = async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+};
+
+
+exports.getPublicQuizzes = async (req, res) => {
+  try {
+    const {
+      search,
+      sort = "latest",
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    const query = {
+      isPublic: true,
+      isActive: true,
+      isPaused: false
+    };
+
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    let sortOption = { createdAt: -1 };
+    if (sort === "oldest") sortOption = { createdAt: 1 };
+    if (sort === "title") sortOption = { title: 1 };
+
+    const skip = (page - 1) * limit;
+
+    const quizzes = await Quiz.aggregate([
+      { $match: query },
+
+      {
+        $lookup: {
+          from: "questionsets",
+          localField: "questionSet",
+          foreignField: "_id",
+          as: "questionSet"
+        }
+      },
+
+      { $unwind: "$questionSet" },
+
+      {
+        $addFields: {
+          questionCount: { $size: "$questionSet.questions" }
+        }
+      },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy"
+        }
+      },
+
+      { $unwind: "$createdBy" },
+
+      {
+        $project: {
+          title: 1,
+          duration: 1,
+          createdAt: 1,
+          isActive: 1,
+          questionCount: 1,
+          "questionSet.topic": 1,
+          "createdBy.firstName": 1,
+          "createdBy.lastName": 1
+        }
+      },
+
+      { $sort: sortOption },
+      { $skip: skip },
+      { $limit: parseInt(limit) }
+    ]);
+
+    const total = await Quiz.countDocuments(query);
+
+    res.json({
+      quizzes,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit)
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

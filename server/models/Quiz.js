@@ -30,6 +30,11 @@ const QuizSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+      isPublic: {
+      type: Boolean,
+      default: false, // only public quizzes visible to everyone
+    },
+
 
     // NEW FIELDS
     isPaused: {

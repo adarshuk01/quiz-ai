@@ -38,6 +38,8 @@ function QuizPage() {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
+  
+
   useEffect(() => {
     // Prevent loading twice
     if (window.google && window.google.translate) return;

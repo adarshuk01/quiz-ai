@@ -9,6 +9,7 @@ import {
   FiCreditCard,
   FiHelpCircle,
   FiLock,
+  FiCompass,
 } from "react-icons/fi";
 import { FaQuestion, FaWandMagicSparkles } from "react-icons/fa6";
 import { LuFileQuestion } from "react-icons/lu";
@@ -19,6 +20,8 @@ function Sidebar() {
     { name: "Dashboard", icon: <FiGrid />, path: "/dashboard" },
     { name: "Question Sets", icon: <LuFileQuestion />, path: "/question-sets" },
     { name: "My Quizzes", icon: <FiBookOpen />, path: "/quizzes" },
+        { name: "Explore", icon: <FiCompass />, path: "/explore" },
+
     { name: "Students", icon: <FiUsers />, path: "/students" },
     { name: "Reports", icon: <FiBarChart2 />, path: "/reports" },
   ];
