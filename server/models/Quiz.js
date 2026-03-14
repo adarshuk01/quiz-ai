@@ -35,6 +35,15 @@ const QuizSchema = new mongoose.Schema(
       default: false, // only public quizzes visible to everyone
     },
 
+      /* GROUP ACCESS */
+
+  allowedGroups: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Group",
+    },
+  ],
+
 
     // NEW FIELDS
     isPaused: {

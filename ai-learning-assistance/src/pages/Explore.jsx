@@ -47,7 +47,7 @@ function Explore() {
       setLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/quiz/public/explore?search=${debouncedSearch}&sort=${sort}&page=${page}`
+        `https://quiz-ai-orpin.vercel.app/api/quiz/public/explore?search=${debouncedSearch}&sort=${sort}&page=${page}`
       );
 
       const data = await res.json();

@@ -7,6 +7,7 @@ import { FiInfo } from "react-icons/fi";
 import { useQuestionSets } from "../../context/QuestionSetContext";
 import { useQuiz } from "../../context/QuizContext";
 import Breadcrumb from "../common/Breadcrumb";
+import { useGroup } from "../../context/GroupContext";
 
 function QuizBasicInfo() {
   const navigate = useNavigate();
@@ -15,19 +16,29 @@ function QuizBasicInfo() {
 
   const { questionSets, getMyQuestionSets } = useQuestionSets();
   const { createQuiz, updateQuiz, getQuizById, loading } = useQuiz();
+  const {
+    groups,
+    fetchGroups,
+
+  } = useGroup();
 
   const [form, setForm] = useState({
     title: "",
     questionSet: "",
     duration: 30,
-    pauseAt: "", // NEW FIELD
+    pauseAt: "",
     isPublic: false,
+    groups: [] // NEW
   });
 
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     getMyQuestionSets();
+  }, []);
+
+  useEffect(() => {
+    fetchGroups();
   }, []);
 
 
@@ -50,12 +61,13 @@ function QuizBasicInfo() {
         console.log(quiz);
 
         setForm({
-          title: quiz.title || "",
-          questionSet: quiz.questionSet?._id || "",
-          duration: quiz.duration || 30,
-          pauseAt: toLocalDateTimeInput(quiz.autoPauseAt),
-          isPublic: quiz.isPublic || false,
-        });
+  title: quiz.title || "",
+  questionSet: quiz.questionSet?._id || "",
+  duration: quiz.duration || 30,
+  pauseAt: toLocalDateTimeInput(quiz.autoPauseAt),
+  isPublic: quiz.isPublic || false,
+  groups: quiz.allowedGroups?.map((g) => g._id) || []
+});
       } catch (err) {
         console.error("LOAD QUIZ ERROR:", err);
       }
@@ -81,6 +93,24 @@ function QuizBasicInfo() {
       ...options,
     ];
   }, [questionSets]);
+
+  const formattedGroups = useMemo(() => {
+    return groups.map((g) => ({
+      value: g._id,
+      label: g.name
+    }));
+  }, [groups]);
+
+  const handleGroupChange = (e) => {
+    const values = Array.from(e.target.selectedOptions, (opt) => opt.value);
+
+    setForm((prev) => ({
+      ...prev,
+      groups: values
+    }));
+  };
+
+
 
   const selectedSet = formattedSets.find(
     (set) => set.value === form.questionSet && set.questions
@@ -126,6 +156,7 @@ function QuizBasicInfo() {
       duration: form.duration,
       autoPauseAt: form.pauseAt || null, // NEW
       isPublic: form.isPublic,
+      allowedGroups: form.groups
     };
 
     try {
@@ -193,6 +224,70 @@ function QuizBasicInfo() {
                   This set was generated from "
                   {selectedSet.source || selectedSet.label}".
                 </p>
+              </div>
+            )}
+          </div>
+
+          <div>
+
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Allowed Groups
+              </label>
+
+              <select
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (!value) return;
+
+                  if (!form.groups.includes(value)) {
+                    setForm((prev) => ({
+                      ...prev,
+                      groups: [...prev.groups, value],
+                    }));
+                  }
+
+                  e.target.value = "";
+                }}
+                className="w-full border rounded-lg p-2"
+              >
+                <option value="">Select group</option>
+
+                {formattedGroups.map((group) => (
+                  <option key={group.value} value={group.value}>
+                    {group.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {form?.groups?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {form.groups.map((groupId) => {
+                  const group = formattedGroups.find((g) => g.value === groupId);
+
+                  return (
+                    <div
+                      key={groupId}
+                      className="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm"
+                    >
+                      {group?.label}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm((prev) => ({
+                            ...prev,
+                            groups: prev.groups.filter((g) => g !== groupId),
+                          }));
+                        }}
+                        className="text-indigo-600 hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -24,35 +24,41 @@ import ForgotPassword from './pages/Auth/ForgotPassword'
 import ResetPassword from './pages/Auth/ResetPassword'
 import Home from './pages/Home'
 import Explore from './pages/Explore'
+import Groups from './pages/Groups'
+import GroupDetails from './pages/GroupDetails'
 
 function App() {
   return (
     <>
-    <Toaster position="top-center" />
+      <Toaster position="top-center" />
       <Routes>
         <Route element={<Layout />}>
-         <Route element={<ProtectedRoute />}>
-          <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/question-sets' element={<QuestionSets />} />
-          <Route path='/question-sets/:id' element={<QuestionSetDetails />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path='/dashboard' element={<Dashboard />} />
+            <Route path='/question-sets' element={<QuestionSets />} />
+            <Route path='/question-sets/:id' element={<QuestionSetDetails />} />
 
-          <Route path='/question-sets/create-topic' element={<QuestionSetForm />} />
-          <Route path='/question-sets/create-pdf' element={<UploadPdf />} />
-          <Route path='/quizzes' element={<Quiz />} />
-          <Route path='/quizzes/create' element={<QuizBasicInfo />} />
-          <Route path="/quizzes/edit/:id" element={<QuizBasicInfo />} />
+            <Route path='/question-sets/create-topic' element={<QuestionSetForm />} />
+            <Route path='/question-sets/create-pdf' element={<UploadPdf />} />
+            <Route path='/quizzes' element={<Quiz />} />
+            <Route path='/quizzes/create' element={<QuizBasicInfo />} />
+            <Route path="/quizzes/edit/:id" element={<QuizBasicInfo />} />
 
-          <Route path='/quizdetails/:quizId' element={<QuizDetails />} />
-          <Route path='/profile' element={<MyProfile />} />
-          <Route path='/security' element={<SecuritySettings />} />
+            <Route path='/quizdetails/:quizId' element={<QuizDetails />} />
+            <Route path='/profile' element={<MyProfile />} />
+            <Route path='/security' element={<SecuritySettings />} />
 
-          <Route path='/explore' element={<Explore />} />
+            <Route path='/explore' element={<Explore />} />
+            <Route path='/groups' element={<Groups />} />
+            <Route path='/group/:id' element={<GroupDetails />} />
 
 
 
 
 
-          <Route path='*' element={<NotFound />} />
+
+
+            <Route path='*' element={<NotFound />} />
           </Route>
         </Route>
         <Route path='/signup' element={<SignUp />} />
@@ -62,8 +68,8 @@ function App() {
         <Route path="/startquiz/:code" element={<StartQuizCard />} />
         <Route path="/quizresult/:attemptId/answers" element={<ReviewPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-<Route path="/reset-password/:token" element={<ResetPassword />} />
-<Route path='/' element={<Home/>}/>
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path='/' element={<Home />} />
 
 
       </Routes>

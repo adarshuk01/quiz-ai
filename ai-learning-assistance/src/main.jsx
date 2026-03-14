@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { QuestionSetProvider } from './context/QuestionSetContext.jsx'
 import { QuizProvider } from './context/QuizContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { GroupProvider } from './context/GroupContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')).render(
     <QuestionSetProvider>
       <QuizProvider>
         <AuthProvider>
+          <GroupProvider>
     <App />
+    </GroupProvider>
     </AuthProvider>
     </QuizProvider>
     </QuestionSetProvider>

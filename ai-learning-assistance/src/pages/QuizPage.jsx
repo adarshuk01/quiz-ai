@@ -40,28 +40,30 @@ function QuizPage() {
 
   
 
-  useEffect(() => {
-    // Prevent loading twice
-    if (window.google && window.google.translate) return;
+useEffect(() => {
+  if (document.getElementById("google_translate_script")) return;
 
-    const addScript = document.createElement("script");
-    addScript.src =
-      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    addScript.async = true;
+  const script = document.createElement("script");
+  script.id = "google_translate_script";
+  script.src =
+    "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  script.async = true;
 
-    window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement(
-        {
-          pageLanguage: "en",
-          includedLanguages: "en,ml",
-          autoDisplay: false,
-        },
-        "google_translate_element"
-      );
-    };
+  window.googleTranslateElementInit = () => {
+    if (!window.google?.translate) return;
 
-    document.body.appendChild(addScript);
-  }, []);
+    new window.google.translate.TranslateElement(
+      {
+        pageLanguage: "en",
+        includedLanguages: "en,ml",
+        autoDisplay: false,
+      },
+      "google_translate_element"
+    );
+  };
+
+  document.body.appendChild(script);
+}, []);
 
 
   // Fetch quiz, load backend timer, answers, and current question
@@ -69,6 +71,8 @@ function QuizPage() {
     const fetchQuiz = async () => {
       try {
         const res = await axiosInstance.get(`/quiz/code/${code}`);
+        console.log(res.data);
+        
 
         setQuestions(res.data.questions || []);
         setQuizTitle(res.data.title);

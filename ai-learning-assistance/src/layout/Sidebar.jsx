@@ -22,7 +22,7 @@ function Sidebar() {
     { name: "My Quizzes", icon: <FiBookOpen />, path: "/quizzes" },
         { name: "Explore", icon: <FiCompass />, path: "/explore" },
 
-    { name: "Students", icon: <FiUsers />, path: "/students" },
+    { name: "Groups", icon: <FiUsers />, path: "/groups" },
     { name: "Reports", icon: <FiBarChart2 />, path: "/reports" },
   ];
 

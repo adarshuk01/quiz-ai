@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaClock, FaArrowRight } from "react-icons/fa";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, data } from "react-router-dom";
 import axios from "axios";
 import axiosInstance from "../../api/axiosInstance";
 
@@ -14,6 +14,7 @@ function StartQuizCard() {
 
   const [name, setName] = useState("");
   const [roll, setRoll] = useState("");
+  const [groupId, setGroupId] = useState("");
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -21,6 +22,8 @@ function StartQuizCard() {
         const res = await axiosInstance.get(
           `/quiz/code/${code}`
         );
+        console.log(res.data);
+        
         setQuiz(res.data);
       } catch (err) {
         console.error("Failed to load quiz", err);
@@ -33,10 +36,11 @@ function StartQuizCard() {
   }, [code]);
 
   const handleStart = async () => {
-    if (!name.trim() || !roll.trim()) {
-      alert("Please enter name and roll number");
-      return;
-    }
+   if (!name.trim() || !roll.trim() || !groupId) {
+  alert("Please enter name, roll number and select group");
+  return;
+}
+    
 
     try {
       setStarting(true);
@@ -46,6 +50,7 @@ function StartQuizCard() {
         {
           rollNo: roll,
           studentName: name,
+             groupId: groupId
         }
       );
 
@@ -120,6 +125,28 @@ function StartQuizCard() {
               className="w-full mt-1 px-4 py-3 border border-indigo-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </div>
+
+          {quiz.groups?.length > 0 && (
+  <div>
+    <label className="text-sm text-gray-600">
+      Select Group
+    </label>
+
+    <select
+      value={groupId}
+      onChange={(e) => setGroupId(e.target.value)}
+      className="w-full mt-1 px-4 py-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-200"
+    >
+      <option value="">Select your group</option>
+
+      {quiz.groups.map((group) => (
+        <option key={group._id} value={group._id}>
+          {group.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
           <div>
             <label className="text-sm text-gray-600">

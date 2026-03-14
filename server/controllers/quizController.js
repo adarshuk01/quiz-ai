@@ -2,11 +2,12 @@ const Quiz = require("../models/Quiz");
 const crypto = require("crypto");
 const QuestionSet = require("../models/QuestionSet");
 const QuizAttempt = require("../models/QuizAttempt");
+const Student = require("../models/studentModel");
 require("dotenv").config();
 
 
 exports.createQuiz = async (req, res) => {
-  const { title, questionSetId, duration, autoPauseAt,isPublic } = req.body;
+  const { title, questionSetId, duration, autoPauseAt, isPublic, allowedGroups } = req.body;
 
   const accessCode = crypto.randomBytes(4).toString("hex");
 
@@ -17,7 +18,8 @@ exports.createQuiz = async (req, res) => {
     accessCode,
     createdBy: req.user._id,
     autoPauseAt: autoPauseAt || null,
-    isPublic
+    isPublic,
+    allowedGroups: allowedGroups || []
   });
 
   const link = `${process.env.FRONTEND_URL}/quiz/${accessCode}`;
@@ -82,7 +84,7 @@ exports.getQuizById = async (req, res) => {
     const quiz = await Quiz.findOne({
       _id: req.params.id,
       createdBy: req.user._id,
-    }).populate("questionSet");
+    }).populate("questionSet allowedGroups");
 
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found" });
@@ -97,7 +99,14 @@ exports.getQuizById = async (req, res) => {
 
 exports.updateQuiz = async (req, res) => {
   try {
-    const { title, questionSetId, duration,autoPauseAt ,isPublic } = req.body;
+    const {
+      title,
+      questionSetId,
+      duration,
+      autoPauseAt,
+      isPublic,
+      allowedGroups
+    } = req.body;
 
     const quiz = await Quiz.findOne({
       _id: req.params.id,
@@ -109,11 +118,27 @@ exports.updateQuiz = async (req, res) => {
     }
 
     if (title !== undefined) quiz.title = title;
-    if (questionSetId !== undefined) quiz.questionSet = questionSetId;
-    if (duration !== undefined) quiz.duration = duration;
-        if (autoPauseAt !== undefined) quiz.autoPauseAt = autoPauseAt;
-        if (isPublic !== undefined) quiz.isPublic = isPublic;
 
+    if (questionSetId !== undefined) {
+      quiz.questionSet = questionSetId;
+    }
+
+    if (duration !== undefined) {
+      quiz.duration = duration;
+    }
+
+    if (autoPauseAt !== undefined) {
+      quiz.autoPauseAt = autoPauseAt;
+    }
+
+    if (isPublic !== undefined) {
+      quiz.isPublic = isPublic;
+    }
+
+    // ✅ Update allowed groups
+    if (allowedGroups !== undefined) {
+      quiz.allowedGroups = allowedGroups;
+    }
 
     await quiz.save();
 
@@ -121,9 +146,13 @@ exports.updateQuiz = async (req, res) => {
       message: "Quiz updated successfully",
       quiz,
     });
+
   } catch (error) {
     console.error("UPDATE QUIZ ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
 
@@ -194,28 +223,58 @@ exports.getQuizResult = async (req, res) => {
 exports.startQuiz = async (req, res) => {
   try {
     const { code } = req.params;
-    const { studentName, rollNo } = req.body;
+    const { studentName, rollNo, groupId } = req.body;
 
     const quiz = await Quiz.findOne({ accessCode: code })
-      .populate("questionSet");
+      .populate("questionSet")
+      .populate("allowedGroups");
 
     if (!quiz) {
       return res.status(404).json({ message: "QUIZ_NOT_FOUND" });
     }
 
-    // Check scheduled auto pause
+    // Auto pause check
     if (quiz.autoPauseAt && new Date() >= quiz.autoPauseAt) {
       return res.status(403).json({ message: "QUIZ_AUTO_PAUSED" });
     }
 
-    // 🔴 Check if quiz is paused
+    // Manual pause check
     if (quiz.isPaused) {
       return res.status(403).json({
         message: "QUIZ_PAUSED",
       });
     }
 
-    // Check existing attempt
+    /* ---------------- GROUP ACCESS CHECK ---------------- */
+
+    if (!quiz.isPublic && quiz.allowedGroups.length > 0) {
+
+      const groupAllowed = quiz.allowedGroups.some(
+        (g) => g._id.toString() === groupId
+      );
+
+      if (!groupAllowed) {
+        return res.status(403).json({
+          message: "GROUP_NOT_ALLOWED",
+        });
+      }
+    }
+
+    /* ---------------- STUDENT VALIDATION ---------------- */
+
+    const student = await Student.findOne({
+      rollNo,
+      group: groupId,
+    });
+
+    if (!student) {
+      return res.status(403).json({
+        message: "INVALID_STUDENT_FOR_THIS_GROUP",
+      });
+    }
+
+    /* ---------------- ATTEMPT CHECK ---------------- */
+
     const existingAttempt = await QuizAttempt.findOne({
       quiz: quiz._id,
       rollNo,
@@ -227,24 +286,27 @@ exports.startQuiz = async (req, res) => {
       });
     }
 
-    // Generate token
+    /* ---------------- GENERATE TOKEN ---------------- */
+
     const attemptToken = crypto.randomBytes(16).toString("hex");
 
-    // Expiry based on quiz duration
     const expiresAt = new Date(
       Date.now() + quiz.duration * 60 * 1000
     );
 
-    // Create attempt
+    /* ---------------- CREATE ATTEMPT ---------------- */
+
     await QuizAttempt.create({
       quiz: quiz._id,
       studentName,
       rollNo,
+      group: groupId,
       attemptToken,
       expiresAt,
     });
 
-    // Remove correctAnswer before sending
+    /* ---------------- SAFE QUESTIONS ---------------- */
+
     const safeQuestions = quiz.questionSet.questions.map((q, index) => ({
       questionIndex: index,
       question: q.question,
@@ -255,11 +317,13 @@ exports.startQuiz = async (req, res) => {
       title: quiz.title,
       duration: quiz.duration,
       attemptToken,
-      questions: safeQuestions,
       expiresAt,
+      questions: safeQuestions,
     });
+
   } catch (err) {
     console.error("START QUIZ ERROR:", err);
+
     res.status(500).json({
       message: "FAILED_TO_START_QUIZ",
     });
@@ -268,20 +332,35 @@ exports.startQuiz = async (req, res) => {
 
 
 exports.getQuizByCode = async (req, res) => {
-  const { code } = req.params;
+  try {
+    const { code } = req.params;
 
-  const quiz = await Quiz.findOne({ accessCode: code })
-    .populate("questionSet");
+    const quiz = await Quiz.findOne({ accessCode: code })
+      .populate("allowedGroups", "name",) // only get group name
+      .populate("questionSet")
 
-  if (!quiz) {
-    return res.status(404).json({ message: "QUIZ_NOT_FOUND" });
+
+    if (!quiz) {
+      return res.status(404).json({
+        message: "QUIZ_NOT_FOUND",
+      });
+    }
+
+    res.json({
+      title: quiz.title,
+      duration: quiz.duration,
+      groups: quiz.allowedGroups, // only allowed groups returned
+      isPublic: quiz.isPublic,
+      questions: quiz.questionSet.questions,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "FAILED_TO_FETCH_QUIZ",
+    });
+
   }
-
-  res.json({
-    title: quiz.title,
-    duration: quiz.duration,
-    questions: quiz.questionSet.questions,
-  });
 };
 
 exports.submitQuiz = async (req, res) => {
